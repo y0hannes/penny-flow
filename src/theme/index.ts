@@ -7,6 +7,9 @@ export interface Theme {
     textPrimary: string; // Main text color (black)
     textSecondary: string; // Secondary text, labels, placeholders (gray)
     textTertiary: string; // Lighter gray for unselected icons/text
+    success: string;
+    warning: string;
+    danger: string;
     border: string; // Field borders
     buttonText: string; // Text on buttons
     selectedCategoryBg: string; // Background for selected category
@@ -15,6 +18,7 @@ export interface Theme {
   };
   fonts: {
     regular: string;
+    medium: string;
     bold: string;
   };
   fontSizes: {
@@ -44,6 +48,9 @@ export const theme: Theme = {
     textPrimary: '#000000', // Black for main texts like "Add New Expense", "Category", "Details"
     textSecondary: '#808080', // Gray for labels like "AMOUNT", "DATE", "NOTE", "ACCOUNT"
     textTertiary: '#A0A0A0', // Lighter gray for unselected category text/icons
+    success: '#4CAF50',
+    warning: '#FF9800',
+    danger: '#F44336',
     border: '#E0E0E0', // Light gray for field borders (approximated)
     buttonText: '#FFFFFF', // White text on primary buttons
     selectedCategoryBg: '#00BFA5', // Teal for selected category
@@ -52,6 +59,7 @@ export const theme: Theme = {
   },
   fonts: {
     regular: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    medium: Platform.OS === 'ios' ? 'System-Medium' : 'Roboto-Medium',
     bold: Platform.OS === 'ios' ? 'System-Bold' : 'Roboto-Bold',
   },
   fontSizes: {
