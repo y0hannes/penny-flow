@@ -17,7 +17,8 @@ export type TextColorVariant =
   | 'textTertiary'
   | 'success'
   | 'danger'
-  | 'warning';
+  | 'warning'
+  | 'nonActive';
 
 // button
   export type ButtonVariant =

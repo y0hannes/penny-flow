@@ -58,6 +58,7 @@ const Text = ({
     success: { color: theme.colors.success },
     danger: { color: theme.colors.danger },
     warning: { color: theme.colors.warning },
+    nonActive: { color: theme.colors.nonActive },
   };
 
   const combinedStyle: StyleProp<TextStyle> = [

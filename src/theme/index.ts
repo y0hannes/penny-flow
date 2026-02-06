@@ -15,6 +15,7 @@ export interface Theme {
     selectedCategoryBg: string; // Background for selected category
     unselectedCategoryBg: string; // Background for unselected categories
     link: string; // For "See All"
+    nonActive: string;
   };
   fonts: {
     regular: string;
@@ -43,7 +44,7 @@ export interface Theme {
 
 export const theme: Theme = {
   colors: {
-    primary: '#00BFA5', // Teal from "Food" button, "See All", "Save Expense" button
+    primary: '#20D0A4', // Vibrant Teal from the design image
     background: '#FFFFFF', // White background
     textPrimary: '#000000', // Black for main texts like "Add New Expense", "Category", "Details"
     textSecondary: '#808080', // Gray for labels like "AMOUNT", "DATE", "NOTE", "ACCOUNT"
@@ -56,6 +57,7 @@ export const theme: Theme = {
     selectedCategoryBg: '#00BFA5', // Teal for selected category
     unselectedCategoryBg: '#F0F0F0', // Light gray for unselected categories
     link: '#00BFA5', // Teal for "See All"
+    nonActive: '#8E8E93', // Apple/Standard gray for unselected items
   },
   fonts: {
     regular: Platform.OS === 'ios' ? 'System' : 'Roboto',
