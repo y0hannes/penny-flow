@@ -44,20 +44,20 @@ export interface Theme {
 
 export const theme: Theme = {
   colors: {
-    primary: '#20D0A4', // Vibrant Teal from the design image
-    background: '#FFFFFF', // White background
-    textPrimary: '#000000', // Black for main texts like "Add New Expense", "Category", "Details"
-    textSecondary: '#808080', // Gray for labels like "AMOUNT", "DATE", "NOTE", "ACCOUNT"
-    textTertiary: '#A0A0A0', // Lighter gray for unselected category text/icons
-    success: '#4CAF50',
-    warning: '#FF9800',
-    danger: '#F44336',
-    border: '#E0E0E0', // Light gray for field borders (approximated)
-    buttonText: '#FFFFFF', // White text on primary buttons
-    selectedCategoryBg: '#00BFA5', // Teal for selected category
-    unselectedCategoryBg: '#F0F0F0', // Light gray for unselected categories
-    link: '#00BFA5', // Teal for "See All"
-    nonActive: '#8E8E93', // Apple/Standard gray for unselected items
+    primary: '#00D09C', // More vibrant and polished Teal
+    background: '#FFFFFF',
+    textPrimary: '#1A1A1A', // Slightly softer black
+    textSecondary: '#7A7A7A', // Better gray for labels
+    textTertiary: '#BDBDBD', // Lighter gray
+    success: '#00D09C',
+    warning: '#FFB100',
+    danger: '#FF4D4D',
+    border: '#F0F0F0',
+    buttonText: '#FFFFFF',
+    selectedCategoryBg: '#E6F9F5', // Light teal background
+    unselectedCategoryBg: '#F7F8F9',
+    link: '#00D09C',
+    nonActive: '#BDBDBD',
   },
   fonts: {
     regular: Platform.OS === 'ios' ? 'System' : 'Roboto',
