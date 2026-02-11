@@ -4,7 +4,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
-  SafeAreaView,
 } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Text from './Text';
@@ -27,12 +26,13 @@ const BottomTabBar = ({
   const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView
+    <View
       style={{
         backgroundColor: theme.colors.background,
+        paddingBottom: insets.bottom,
       }}
     >
-      <View style={[styles.container, { paddingBottom: insets.bottom || 8 }]}>
+      <View style={styles.container}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
 
@@ -107,7 +107,7 @@ const BottomTabBar = ({
           );
         })}
       </View>
-    </SafeAreaView>
+      </View>
   );
 };
 
