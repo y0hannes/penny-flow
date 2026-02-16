@@ -1,0 +1,20 @@
+export type ExpenseType = 'expense' | 'income';
+
+export interface Expense {
+  id: string;
+  title: string;
+  category: string;
+  amount: number;
+  date: string;
+  type: ExpenseType;
+  icon: string;
+  note?: string;
+  account?: string;
+}
+
+export interface Category {
+  id: string;
+  label: string;
+  amount: number;
+  icon: string;
+}
