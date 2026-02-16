@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -20,56 +20,45 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/RootNavigator';
+import { useExpenses } from '@/context/ExpenseContext';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const { expenses } = useExpenses();
 
-  // Mock data - in a real app, this would come from a state management store
-  const categories = [
-    { id: '1', label: 'Food', amount: 840.5, icon: 'restaurant' as const },
-    { id: '2', label: 'Transport', amount: 320.0, icon: 'car' as const },
-    { id: '3', label: 'Shopping', amount: 512.0, icon: 'cart' as const },
-  ];
+  // Calculate category totals from expenses
+  const categories = useMemo(() => {
+    const categoryMap = new Map<string, { label: string; amount: number; icon: string }>();
 
-  const transactions = [
-    {
-      id: '1',
-      title: 'Starbucks Coffee',
-      category: 'Food',
-      amount: 5.4,
-      date: 'Today, 09:45 AM',
-      type: 'expense' as const,
-      icon: 'cafe' as const,
-    },
-    {
-      id: '2',
-      title: 'Uber Trip',
-      category: 'Transport',
-      amount: 12.5,
-      date: 'Yesterday, 08:20 PM',
-      type: 'expense' as const,
-      icon: 'car' as const,
-    },
-    {
-      id: '3',
-      title: 'Freelance Payment',
-      category: 'Income',
-      amount: 850.0,
-      date: 'Oct 24, 02:00 PM',
-      type: 'income' as const,
-      icon: 'cash' as const,
-    },
-    {
-      id: '4',
-      title: 'Whole Foods',
-      category: 'Food',
-      amount: 45.9,
-      date: 'Oct 23, 11:30 AM',
-      type: 'expense' as const,
-      icon: 'basket' as const,
-    },
-  ];
+    expenses.forEach((expense) => {
+      if (expense.type === 'expense') {
+        const existing = categoryMap.get(expense.category);
+        if (existing) {
+          existing.amount += expense.amount;
+        } else {
+          categoryMap.set(expense.category, {
+            label: expense.category,
+            amount: expense.amount,
+            icon: expense.icon,
+          });
+        }
+      }
+    });
+
+    return Array.from(categoryMap.values()).map((cat, index) => ({
+      id: index.toString(),
+      ...cat,
+    }));
+  }, [expenses]);
+
+  // Calculate total spent this month (all expenses)
+  const totalSpent = useMemo(() => {
+    return expenses
+      .filter((exp) => exp.type === 'expense')
+      .reduce((sum, exp) => sum + exp.amount, 0);
+  }, [expenses]);
+
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -97,7 +86,7 @@ export default function HomeScreen() {
         <SummaryCard
           variant="large"
           label="Total Spent This Month"
-          amount={2450.0}
+          amount={totalSpent}
           comparison="+12% vs last month"
           amountColor="textPrimary"
         />
@@ -106,13 +95,13 @@ export default function HomeScreen() {
         <View style={styles.statsRow}>
           <SummaryCard
             label="Daily Average"
-            amount={81.66}
+            amount={totalSpent / 30}
             progress={0.65}
             amountColor="textPrimary"
           />
           <SummaryCard
             label="Remaining"
-            amount={1550.0}
+            amount={4000 - totalSpent}
             progress={0.4}
             amountColor="primary"
           />
@@ -140,7 +129,7 @@ export default function HomeScreen() {
               key={cat.id}
               label={cat.label}
               amount={cat.amount}
-              icon={cat.icon}
+              icon={cat.icon as any}
             />
           ))}
         </ScrollView>
@@ -153,15 +142,15 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.transactionsList}>
-          {transactions.map((transaction) => (
+          {expenses.map((expense) => (
             <TransactionCard
-              key={transaction.id}
-              title={transaction.title}
-              category={transaction.category}
-              amount={transaction.amount}
-              date={transaction.date}
-              type={transaction.type}
-              icon={transaction.icon}
+              key={expense.id}
+              title={expense.title}
+              category={expense.category}
+              amount={expense.amount}
+              date={expense.date}
+              type={expense.type}
+              icon={expense.icon as any}
             />
           ))}
         </View>

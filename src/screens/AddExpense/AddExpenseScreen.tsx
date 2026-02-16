@@ -6,30 +6,72 @@ import {
   ScrollView,
   TextInput,
   Platform,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/theme';
 import { Text, CategoryCard } from '@/components/ui';
 import { useNavigation } from '@react-navigation/native';
+import { useExpenses } from '@/context/ExpenseContext';
+
+// Icon mapping for categories
+const categoryIcons: Record<string, string> = {
+  Food: 'restaurant',
+  Shopping: 'cart',
+  Bills: 'receipt',
+  Transport: 'car',
+};
 
 export default function AddExpenseScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const [amount, setAmount] = useState('0.00');
+  const { addExpense } = useExpenses();
+
+  const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Food');
+  const [note, setNote] = useState('');
+  const [account, setAccount] = useState('Primary Wallet');
 
   const categories = [
     { id: '1', label: 'Food', icon: 'restaurant' as const },
     { id: '2', label: 'Shopping', icon: 'cart' as const },
     { id: '3', label: 'Bills', icon: 'receipt' as const },
-    // Add more categories as needed for the grid
+    { id: '4', label: 'Transport', icon: 'car' as const },
   ];
+
+  const handleSaveExpense = () => {
+    // Validate amount
+    const numAmount = parseFloat(amount);
+    if (!amount || isNaN(numAmount) || numAmount <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid amount');
+      return;
+    }
+
+    // Get current date/time
+    const now = new Date();
+    const dateStr = `Today, ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+
+    // Create new expense
+    addExpense({
+      title: note || `${selectedCategory} Expense`,
+      category: selectedCategory,
+      amount: numAmount,
+      date: dateStr,
+      type: 'expense',
+      icon: categoryIcons[selectedCategory] || 'cash',
+      note,
+      account,
+    });
+
+    // Navigate back
+    navigation.goBack();
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <Text style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
           <Ionicons name="close" size={28} color={theme.colors.textPrimary} />
         </TouchableOpacity>
@@ -37,7 +79,7 @@ export default function AddExpenseScreen() {
           Add New Expense
         </Text>
         <View style={{ width: 40 }} /> {/* Spacer */}
-      </View>
+      </Text>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Amount Input */}
@@ -47,8 +89,15 @@ export default function AddExpenseScreen() {
           </Text>
           <View style={styles.amountRow}>
             <Text style={styles.currencySymbol}>$</Text>
-            <Text style={styles.amountValue}>{amount}</Text>
-            <View style={styles.cursor} />
+            <TextInput
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="decimal-pad"
+              style={styles.amountValue}
+              placeholder="0.00"
+              placeholderTextColor={theme.colors.textTertiary}
+              autoFocus
+            />
           </View>
         </View>
 
@@ -105,6 +154,8 @@ export default function AddExpenseScreen() {
             <View style={styles.detailContent}>
               <Text variant="caption" color="textTertiary" bold>NOTE</Text>
               <TextInput
+                value={note}
+                onChangeText={setNote}
                 placeholder="Add a description..."
                 placeholderTextColor={theme.colors.textTertiary}
                 style={styles.textInput}
@@ -128,7 +179,7 @@ export default function AddExpenseScreen() {
         {/* Save Button */}
         <TouchableOpacity
           style={styles.saveButton}
-          onPress={() => navigation.goBack()}
+          onPress={handleSaveExpense}
           activeOpacity={0.8}
         >
           <Text variant="button" bold>
@@ -187,12 +238,9 @@ const styles = StyleSheet.create({
     fontSize: 64,
     fontFamily: theme.fonts.bold,
     color: theme.colors.textPrimary,
-  },
-  cursor: {
-    width: 2,
-    height: 50,
-    backgroundColor: theme.colors.primary,
-    marginLeft: 4,
+    minWidth: 150,
+    textAlign: 'center',
+    padding: 0,
   },
   sectionHeader: {
     flexDirection: 'row',
