@@ -4,3 +4,5 @@ export { default as TransactionCard } from './TransactionCard';
 export { default as CategoryCard } from './CategoryCard';
 export { default as SummaryCard } from './SummaryCard';
 export { default as FloatingActionButton } from './FloatingActionButton';
+export { default as SettingsItem } from './SettingsItem';
+export { default as SettingsSection } from './SettingsSection';
