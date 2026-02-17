@@ -31,7 +31,6 @@ export default function SettingsScreen() {
         <Text variant="subheading" bold color="textPrimary" style={styles.headerTitle}>
           App Settings
         </Text>
-        <View style={{ width: 44 }} /> {/* Spacer */}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -128,17 +127,22 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.sm,
+    justifyContent: 'center',
     paddingVertical: theme.spacing.md,
-    backgroundColor: '#F7F8F9', // Match background
+    backgroundColor: '#F7F8F9',
+    position: 'relative',
+    minHeight: 56,
   },
   backButton: {
+    position: 'absolute',
+    left: theme.spacing.md,
     padding: theme.spacing.xs,
+    zIndex: 1,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.md,
