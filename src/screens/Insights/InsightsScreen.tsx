@@ -9,6 +9,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/navigation/RootNavigator';
 import { theme } from '@/theme';
 import {
   Text,
@@ -21,9 +24,11 @@ import { useExpenses } from '@/context/ExpenseContext';
 const { width } = Dimensions.get('window');
 
 export default function InsightsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { expenses } = useExpenses();
   const [selectedTab, setSelectedTab] = useState('Monthly');
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   // Helper to parse dates from the mock data
   const parseDate = (dateStr: string) => {
@@ -183,13 +188,13 @@ export default function InsightsScreen() {
         {/* Top Categories */}
         <View style={styles.sectionHeader}>
           <Text variant="subheading" bold color="textPrimary">Top Categories</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('AllCategories')}>
             <Text variant="link" color="primary">View All</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.categoryList}>
-          {categoriesStats.map((item, index) => (
+          {categoriesStats.slice(0, 3).map((item, index) => (
             <View key={index} style={styles.categoryItem}>
               <View style={[styles.categoryIcon, { backgroundColor: `${item.color}15` }]}>
                 <Ionicons name={item.icon as any} size={20} color={item.color} />
@@ -243,6 +248,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
   summarySection: {
     alignItems: 'center',
