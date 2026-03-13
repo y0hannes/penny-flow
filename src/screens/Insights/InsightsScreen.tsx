@@ -25,45 +25,87 @@ export default function InsightsScreen() {
   const { expenses } = useExpenses();
   const [selectedTab, setSelectedTab] = useState('Monthly');
 
-  // Calculate stats based on expenses
+  // Helper to parse dates from the mock data
+  const parseDate = (dateStr: string) => {
+    if (dateStr.includes('Today')) return new Date();
+    if (dateStr.includes('Yesterday')) {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      return d;
+    }
+    // Handle formats like "Mar 01, 2026" or "Oct 24, 02:00 PM"
+    return new Date(dateStr);
+  };
+
+  const filteredExpenses = useMemo(() => {
+    const now = new Date();
+    const currentYear = 2026; // Since our mock data is set in 2026
+    const currentMonth = 2; // March is index 2
+
+    return expenses.filter(exp => {
+      if (exp.type !== 'expense') return false;
+      const expDate = parseDate(exp.date);
+
+      if (selectedTab === 'Weekly') {
+        const oneWeekAgo = new Date(now);
+        oneWeekAgo.setDate(now.getDate() - 7);
+        return expDate >= oneWeekAgo;
+      } else if (selectedTab === 'Monthly') {
+        return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+      } else if (selectedTab === 'Yearly') {
+        return expDate.getFullYear() === currentYear || expDate.getFullYear() === 2025;
+      }
+      return true;
+    });
+  }, [expenses, selectedTab]);
+
+  // Calculate stats based on filtered expenses
   const totalSpent = useMemo(() => {
-    return expenses
-      .filter((exp) => exp.type === 'expense')
-      .reduce((sum, exp) => sum + exp.amount, 0);
-  }, [expenses]);
+    return filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  }, [filteredExpenses]);
 
   const categoriesStats = useMemo(() => {
-    const stats: Record<string, { amount: number; count: number; icon: string; color: string }> = {
-      Housing: { amount: 1700, count: 12, icon: 'home', color: '#00D09C' },
-      'Food & Drinks': { amount: 1062.50, count: 48, icon: 'restaurant', color: '#FFB100' },
-      Transport: { amount: 850.16, count: 24, icon: 'car', color: '#4D9AFF' },
+    const statsMap = new Map<string, { amount: number; count: number; icon: string; color: string }>();
+
+    // Base categories for visuals
+    const categoryConfig: Record<string, { icon: string; color: string }> = {
+      Housing: { icon: 'home', color: '#00D09C' },
+      Food: { icon: 'restaurant', color: '#FFB100' },
+      Transport: { icon: 'car', color: '#4D9AFF' },
+      Shopping: { icon: 'cart', color: '#FF4D4D' },
+      Bills: { icon: 'flash', color: '#9C27B0' },
+      Entertainment: { icon: 'wine', color: '#FF9800' },
+      Health: { icon: 'fitness', color: '#E91E63' },
     };
 
-    // Integrate real expenses if they match or just use mock for visual fidelity to the sample image
-    // In a real app, we'd aggregate all expenses by category here.
+    filteredExpenses.forEach(exp => {
+      const existing = statsMap.get(exp.category);
+      const config = categoryConfig[exp.category] || { icon: 'help', color: '#7A7A7A' };
 
-    // Supplement with real data for Categories section
-    const realStatsMap = new Map<string, number>();
-    expenses.forEach(exp => {
-      if (exp.type === 'expense') {
-        realStatsMap.set(exp.category, (realStatsMap.get(exp.category) || 0) + exp.amount);
+      if (existing) {
+        existing.amount += exp.amount;
+        existing.count += 1;
+      } else {
+        statsMap.set(exp.category, {
+          amount: exp.amount,
+          count: 1,
+          icon: config.icon,
+          color: config.color,
+        });
       }
     });
 
-    const categoryList = [
-      { label: 'Housing', amount: 1700, count: 12, icon: 'home', color: '#00D09C' },
-      { label: 'Food & Drinks', amount: 1062.5, count: 48, icon: 'restaurant', color: '#FFB100' },
-      { label: 'Transport', amount: 850.16, count: 24, icon: 'car', color: '#4D9AFF' },
-    ];
-
-    const total = categoryList.reduce((sum, item) => sum + item.amount, 0);
-    return categoryList.map(item => ({
-      ...item,
-      percentage: (item.amount / total) * 100
+    const categories = Array.from(statsMap.entries()).map(([label, stat]) => ({
+      label,
+      ...stat,
+      percentage: (stat.amount / (totalSpent || 1)) * 100
     }));
-  }, [expenses]);
+
+    return categories.sort((a, b) => b.amount - a.amount);
+  }, [filteredExpenses, totalSpent]);
 
   const donutData = useMemo(() => {
+    if (categoriesStats.length === 0) return [{ percentage: 100, color: '#F0F0F0' }];
     return categoriesStats.map(stat => ({
       percentage: stat.percentage,
       color: stat.color
@@ -71,7 +113,7 @@ export default function InsightsScreen() {
   }, [categoriesStats]);
 
   // Mock trend data for line chart
-  const trendData = [150, 180, 120, 220, 190, 242, 210, 280];
+  const trendData = selectedTab === 'Weekly' ? [120, 150, 80, 100, 140, 90, 110] : [150, 180, 120, 220, 190, 242, 210, 280];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
