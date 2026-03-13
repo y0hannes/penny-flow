@@ -59,6 +59,7 @@ const Text = ({
     danger: { color: theme.colors.danger },
     warning: { color: theme.colors.warning },
     nonActive: { color: theme.colors.nonActive },
+    buttonText: { color: theme.colors.buttonText },
   };
 
   const combinedStyle: StyleProp<TextStyle> = [

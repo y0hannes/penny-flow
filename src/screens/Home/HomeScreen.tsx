@@ -59,6 +59,14 @@ export default function HomeScreen() {
       .reduce((sum, exp) => sum + exp.amount, 0);
   }, [expenses]);
 
+  // Calculate total income this month
+  const totalIncome = useMemo(() => {
+    return expenses
+      .filter((exp) => exp.type === 'income')
+      .reduce((sum, exp) => sum + exp.amount, 0);
+  }, [expenses]);
+
+  const balance = totalIncome - totalSpent;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -85,25 +93,25 @@ export default function HomeScreen() {
         {/* Main Summary */}
         <SummaryCard
           variant="large"
-          label="Total Spent This Month"
-          amount={totalSpent}
-          comparison="+12% vs last month"
-          amountColor="textPrimary"
+          label="Total Balance"
+          amount={balance}
+          comparison={balance >= 0 ? "+$250 from last month" : "-$150 from last month"}
+          amountColor={balance >= 0 ? "success" : "danger"}
         />
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <SummaryCard
-            label="Daily Average"
-            amount={totalSpent / 30}
-            progress={0.65}
-            amountColor="textPrimary"
+            label="Income"
+            amount={totalIncome}
+            progress={1}
+            amountColor="success"
           />
           <SummaryCard
-            label="Remaining"
-            amount={4000 - totalSpent}
-            progress={0.4}
-            amountColor="primary"
+            label="Expenses"
+            amount={totalSpent}
+            progress={totalSpent / (totalIncome || 1)}
+            amountColor="danger"
           />
         </View>
 

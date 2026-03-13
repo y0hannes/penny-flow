@@ -21,24 +21,43 @@ const categoryIcons: Record<string, string> = {
   Shopping: 'cart',
   Bills: 'receipt',
   Transport: 'car',
+  Salary: 'briefcase',
+  Freelance: 'laptop',
+  Gift: 'gift',
+  Investment: 'trending-up',
 };
+
+const expenseCategories = [
+  { id: '1', label: 'Food', icon: 'restaurant' as const },
+  { id: '2', label: 'Shopping', icon: 'cart' as const },
+  { id: '3', label: 'Bills', icon: 'receipt' as const },
+  { id: '4', label: 'Transport', icon: 'car' as const },
+];
+
+const incomeCategories = [
+  { id: '1', label: 'Salary', icon: 'briefcase' as const },
+  { id: '2', label: 'Freelance', icon: 'laptop' as const },
+  { id: '3', label: 'Gift', icon: 'gift' as const },
+  { id: '4', label: 'Investment', icon: 'trending-up' as const },
+];
 
 export default function AddExpenseScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { addExpense } = useExpenses();
 
+  const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Food');
   const [note, setNote] = useState('');
   const [account, setAccount] = useState('Primary Wallet');
 
-  const categories = [
-    { id: '1', label: 'Food', icon: 'restaurant' as const },
-    { id: '2', label: 'Shopping', icon: 'cart' as const },
-    { id: '3', label: 'Bills', icon: 'receipt' as const },
-    { id: '4', label: 'Transport', icon: 'car' as const },
-  ];
+  const categories = type === 'expense' ? expenseCategories : incomeCategories;
+
+  const handleTypeChange = (newType: 'expense' | 'income') => {
+    setType(newType);
+    setSelectedCategory(newType === 'expense' ? 'Food' : 'Salary');
+  };
 
   const handleSaveExpense = () => {
     // Validate amount
@@ -52,13 +71,13 @@ export default function AddExpenseScreen() {
     const now = new Date();
     const dateStr = `Today, ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
 
-    // Create new expense
+    // Create new expense/income
     addExpense({
-      title: note || `${selectedCategory} Expense`,
+      title: note || `${selectedCategory} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
       category: selectedCategory,
       amount: numAmount,
       date: dateStr,
-      type: 'expense',
+      type: type,
       icon: categoryIcons[selectedCategory] || 'cash',
       note,
       account,
@@ -71,17 +90,51 @@ export default function AddExpenseScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       {/* Header */}
-      <Text style={styles.header}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
           <Ionicons name="close" size={28} color={theme.colors.textPrimary} />
         </TouchableOpacity>
         <Text variant="subheading" bold color="textPrimary">
-          Add New Expense
+          Add New {type === 'expense' ? 'Expense' : 'Income'}
         </Text>
         <View style={{ width: 40 }} /> {/* Spacer */}
-      </Text>
+      </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {/* Type Selector */}
+        <View style={styles.typeSelectorContainer}>
+          <TouchableOpacity
+            style={[
+              styles.typeButton,
+              type === 'expense' && styles.activeExpenseButton,
+            ]}
+            onPress={() => handleTypeChange('expense')}
+          >
+            <Text
+              variant="body"
+              bold={type === 'expense'}
+              color={type === 'expense' ? 'buttonText' : 'textSecondary'}
+            >
+              Expense
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.typeButton,
+              type === 'income' && styles.activeIncomeButton,
+            ]}
+            onPress={() => handleTypeChange('income')}
+          >
+            <Text
+              variant="body"
+              bold={type === 'income'}
+              color={type === 'income' ? 'buttonText' : 'textSecondary'}
+            >
+              Income
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Amount Input */}
         <View style={styles.amountContainer}>
           <Text variant="caption" color="textTertiary" bold align="center" style={styles.amountLabel}>
@@ -178,16 +231,20 @@ export default function AddExpenseScreen() {
 
         {/* Save Button */}
         <TouchableOpacity
-          style={styles.saveButton}
+          style={[
+            styles.saveButton,
+            { backgroundColor: type === 'expense' ? theme.colors.danger : theme.colors.success }
+          ]}
           onPress={handleSaveExpense}
           activeOpacity={0.8}
         >
           <Text variant="button" bold>
-            Save Expense
+            Save {type === 'expense' ? 'Expense' : 'Income'}
           </Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
+
   );
 }
 
@@ -241,6 +298,26 @@ const styles = StyleSheet.create({
     minWidth: 150,
     textAlign: 'center',
     padding: 0,
+  },
+  typeSelectorContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F7F8F9',
+    borderRadius: theme.borderRadius.medium,
+    padding: 4,
+    marginBottom: theme.spacing.xl,
+  },
+  typeButton: {
+    flex: 1,
+    height: 40,
+    borderRadius: theme.borderRadius.medium - 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeExpenseButton: {
+    backgroundColor: theme.colors.danger,
+  },
+  activeIncomeButton: {
+    backgroundColor: theme.colors.success,
   },
   sectionHeader: {
     flexDirection: 'row',
