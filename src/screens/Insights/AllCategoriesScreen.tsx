@@ -16,7 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 export default function AllCategoriesScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { expenses } = useExpenses();
+  const { expenses, currency } = useExpenses();
 
   const parseDate = (dateStr: string) => {
     if (dateStr.includes('Today')) return new Date();
@@ -96,7 +96,7 @@ export default function AllCategoriesScreen() {
                   </View>
                   <View style={styles.categoryAmountInfo}>
                     <Text variant="body" bold color="textPrimary">
-                      ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {currency.symbol}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </Text>
                     <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
                   </View>

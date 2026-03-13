@@ -6,20 +6,25 @@ import {
   TouchableOpacity,
   Switch,
   Platform,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '@/theme';
 import { Text, SettingsItem, SettingsSection } from '@/components/ui';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useExpenses, currencies } from '@/context/ExpenseContext';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const { currency, setCurrency } = useExpenses();
 
   const [budgetAlerts, setBudgetAlerts] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [budget, setBudget] = useState(2500);
+  const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -39,8 +44,8 @@ export default function SettingsScreen() {
           <SettingsItem
             icon="cash-outline"
             label="Currency"
-            value="USD"
-            onPress={() => { }}
+            value={`${currency.label} (${currency.symbol})`}
+            onPress={() => setIsCurrencyModalVisible(true)}
           />
           <SettingsItem
             icon="globe-outline"
@@ -58,7 +63,7 @@ export default function SettingsScreen() {
                 <Ionicons name="wallet-outline" size={22} color={theme.colors.primary} />
               </View>
               <Text style={styles.budgetLabel}>Monthly Budget</Text>
-              <Text style={styles.budgetValue}>${budget.toLocaleString()}</Text>
+              <Text style={styles.budgetValue}>{currency.symbol}{budget.toLocaleString()}</Text>
             </View>
 
             <View style={styles.sliderContainer}>
@@ -67,8 +72,8 @@ export default function SettingsScreen() {
                 <View style={[styles.sliderThumb, { left: '25%' }]} />
               </View>
               <View style={styles.sliderLabels}>
-                <Text variant="caption" color="textTertiary">$0</Text>
-                <Text variant="caption" color="textTertiary">$10,000</Text>
+                <Text variant="caption" color="textTertiary">{currency.symbol}0</Text>
+                <Text variant="caption" color="textTertiary">{currency.symbol}10,000</Text>
               </View>
             </View>
           </View>
@@ -113,6 +118,50 @@ export default function SettingsScreen() {
           />
         </SettingsSection>
       </ScrollView>
+
+      {/* Modal for Currency Selection */}
+      <Modal
+        visible={isCurrencyModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsCurrencyModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text variant="subheading" bold>Select Currency</Text>
+              <TouchableOpacity onPress={() => setIsCurrencyModalVisible(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={currencies}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.currencyOption}
+                  onPress={() => {
+                    setCurrency(item.code);
+                    setIsCurrencyModalVisible(false);
+                  }}
+                >
+                  <View style={styles.currencyInfo}>
+                    <View style={styles.currencySymbolCircle}>
+                      <Text style={styles.currencySymbolText}>{item.symbol}</Text>
+                    </View>
+                    <Text variant="body" bold={currency.code === item.code}>
+                      {item.label} ({item.code})
+                    </Text>
+                  </View>
+                  {currency.code === item.code && (
+                    <Ionicons name="checkmark-circle" size={24} color={theme.colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
 
       {/* Footer / Credits can go here if needed, but not in the image */}
     </View>
@@ -220,5 +269,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: theme.spacing.md,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '70%',
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
+  },
+  currencyOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F9F9F9',
+  },
+  currencyInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  currencySymbolCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F5F6F8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.md,
+  },
+  currencySymbolText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
 });

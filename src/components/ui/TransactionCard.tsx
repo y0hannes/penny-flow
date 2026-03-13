@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/theme';
 import Text from './Text';
 import { TransactionType } from '@/types/ui-variants';
+import { useExpenses } from '@/context/ExpenseContext';
 
 interface TransactionCardProps {
   title: string;
@@ -24,6 +25,7 @@ const TransactionCard = ({
   icon,
   onPress,
 }: TransactionCardProps) => {
+  const { currency } = useExpenses();
   const isExpense = type === 'expense';
   const amountPrefix = isExpense ? '-' : '+';
   const amountColor = isExpense ? 'textPrimary' : 'success';
@@ -46,7 +48,7 @@ const TransactionCard = ({
             {title}
           </Text>
           <Text variant="body" bold color={amountColor}>
-            {amountPrefix}${amount.toFixed(2)}
+            {amountPrefix}{currency.symbol}{amount.toFixed(2)}
           </Text>
         </View>
 

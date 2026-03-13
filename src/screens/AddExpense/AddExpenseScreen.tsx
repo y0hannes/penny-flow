@@ -44,7 +44,7 @@ const incomeCategories = [
 export default function AddExpenseScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { addExpense } = useExpenses();
+  const { addExpense, currency } = useExpenses();
 
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState('');
@@ -141,7 +141,7 @@ export default function AddExpenseScreen() {
             AMOUNT
           </Text>
           <View style={styles.amountRow}>
-            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={styles.currencySymbol}>{currency.symbol}</Text>
             <TextInput
               value={amount}
               onChangeText={setAmount}

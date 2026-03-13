@@ -26,7 +26,7 @@ const { width } = Dimensions.get('window');
 export default function InsightsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { expenses } = useExpenses();
+  const { expenses, currency } = useExpenses();
   const [selectedTab, setSelectedTab] = useState('Monthly');
   const [showAllCategories, setShowAllCategories] = useState(false);
 
@@ -148,7 +148,7 @@ export default function InsightsScreen() {
             Total spent this month
           </Text>
           <Text style={styles.totalAmount}>
-            ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {currency.symbol}{totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
           <View style={styles.trendContainer}>
             <Ionicons name="trending-up" size={16} color={theme.colors.danger} />
@@ -180,7 +180,7 @@ export default function InsightsScreen() {
             <LineChart data={trendData} />
             {/* Tooltip mockup */}
             <View style={styles.tooltip}>
-              <Text style={styles.tooltipText}>$242.00</Text>
+              <Text style={styles.tooltipText}>{currency.symbol}242.00</Text>
             </View>
           </View>
         </View>
@@ -207,7 +207,7 @@ export default function InsightsScreen() {
                   </View>
                   <View style={styles.categoryAmountInfo}>
                     <Text variant="body" bold color="textPrimary">
-                      ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {currency.symbol}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </Text>
                     <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
                   </View>

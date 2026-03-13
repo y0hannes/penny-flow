@@ -4,6 +4,7 @@ import { theme } from '@/theme';
 import Text from './Text';
 
 import { TextColorVariant } from '@/types/ui-variants';
+import { useExpenses } from '@/context/ExpenseContext';
 
 interface SummaryCardProps {
   label: string;
@@ -25,6 +26,7 @@ const SummaryCard = ({
   comparison,
   amountColor,
 }: SummaryCardProps) => {
+  const { currency } = useExpenses();
   const isLarge = variant === 'large';
 
   // Default amount color logic if not explicitly provided
@@ -53,7 +55,7 @@ const SummaryCard = ({
         align="center"
         style={isLarge ? styles.largeAmount : styles.smallAmount}
       >
-        ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        {currency.symbol}{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </Text>
 
       {comparison && (

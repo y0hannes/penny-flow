@@ -18,3 +18,11 @@ export interface Category {
   amount: number;
   icon: string;
 }
+
+export type CurrencyCode = 'ETB' | 'USD' | 'GBP' | 'EUR';
+
+export interface Currency {
+  code: CurrencyCode;
+  label: string;
+  symbol: string;
+}
