@@ -18,10 +18,11 @@ export type TextColorVariant =
   | 'success'
   | 'danger'
   | 'warning'
-  | 'nonActive';
+  | 'nonActive'
+  | 'buttonText';
 
 // button
-  export type ButtonVariant =
+export type ButtonVariant =
   | 'primary'
   | 'secondary'
   | 'outline'

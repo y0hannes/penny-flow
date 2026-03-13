@@ -3,13 +3,15 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import { theme } from '@/theme';
 import Text from './Text';
 
+import { TextColorVariant } from '@/types/ui-variants';
+
 interface SummaryCardProps {
   label: string;
   amount: number;
   variant?: 'large' | 'small';
   progress?: number; // 0 to 1
   comparison?: string;
-  amountColor?: 'primary' | 'textPrimary';
+  amountColor?: TextColorVariant;
 }
 
 const { width } = Dimensions.get('window');
@@ -55,8 +57,15 @@ const SummaryCard = ({
       </Text>
 
       {comparison && (
-        <View style={styles.comparisonContainer}>
-          <Text variant="caption" color="danger" bold>
+        <View style={[
+          styles.comparisonContainer,
+          { backgroundColor: comparison.startsWith('+') ? '#E6F9F5' : '#FFE5E5' }
+        ]}>
+          <Text
+            variant="caption"
+            color={comparison.startsWith('+') ? 'success' : 'danger'}
+            bold
+          >
             {comparison}
           </Text>
         </View>
