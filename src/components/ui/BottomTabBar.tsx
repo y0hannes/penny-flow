@@ -12,10 +12,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/theme';
 
 const tabIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
-  Home: 'grid',
-  Insights: 'stats-chart',
-  Settings: 'settings',
-  Profile: 'person',
+  Home: 'wallet-outline',
+  Analytics: 'trending-up-outline',
+  Settings: 'settings-outline',
+  Profile: 'person-outline',
 };
 
 const BottomTabBar = ({
@@ -107,7 +107,7 @@ const BottomTabBar = ({
           );
         })}
       </View>
-      </View>
+    </View>
   );
 };
 
