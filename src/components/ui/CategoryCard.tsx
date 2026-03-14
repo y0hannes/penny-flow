@@ -37,20 +37,32 @@ const CategoryCard = ({
       style={[
         styles.container,
         { backgroundColor: theme.colors.background, borderColor: isDark ? '#2C2C2C' : '#F0F0F0' },
-        isGrid && { width: GRID_WIDTH, aspectRatio: 1, backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9', margin: staticTheme.spacing.xs },
-        variant === 'horizontal' && { width: 100, marginRight: staticTheme.spacing.md, borderWidth: 1 },
+        isGrid && { 
+          width: GRID_WIDTH, 
+          aspectRatio: 1, 
+          backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9', 
+          margin: staticTheme.spacing.xs 
+        },
+        variant === 'horizontal' && { 
+          minWidth: 85,
+          paddingVertical: staticTheme.spacing.sm,
+          paddingHorizontal: staticTheme.spacing.md,
+          marginRight: staticTheme.spacing.sm, 
+          borderWidth: 1,
+        },
         selected && { backgroundColor: isDark ? '#003328' : '#E8FAF6', borderColor: theme.colors.primary },
       ]}
     >
       <View
         style={[
           styles.iconCircle,
+          !isGrid && { width: 40, height: 40, borderRadius: 20, marginBottom: 4 },
           { backgroundColor: selected ? theme.colors.primary : (isDark ? '#2C2C2C' : '#F7F8F9') },
         ]}
       >
         <Ionicons
           name={icon}
-          size={isGrid ? 28 : 24}
+          size={isGrid ? 28 : 20}
           color={selected ? theme.colors.buttonText : theme.colors.textPrimary}
         />
       </View>
@@ -59,6 +71,7 @@ const CategoryCard = ({
         variant="caption"
         bold
         color="textPrimary"
+        numberOfLines={1}
         style={styles.label}
       >
         {label}

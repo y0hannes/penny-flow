@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,6 +7,8 @@ import {
   TextInput,
   Platform,
   Alert,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -52,7 +54,7 @@ export default function AddExpenseScreen() {
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Food');
   const [note, setNote] = useState('');
-  const [account, setAccount] = useState('Primary Wallet');
+  const noteInputRef = useRef<TextInput>(null);
 
   const categories = type === 'expense' ? expenseCategories : incomeCategories;
 
@@ -82,7 +84,6 @@ export default function AddExpenseScreen() {
       type: type,
       icon: categoryIcons[selectedCategory] || 'cash',
       note,
-      account,
     });
 
     // Navigate back
@@ -90,200 +91,116 @@ export default function AddExpenseScreen() {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-          backgroundColor: theme.colors.background,
-        },
-      ]}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <Ionicons name="close" size={28} color={theme.colors.textPrimary} />
-        </TouchableOpacity>
-        <Text variant="subheading" bold color="textPrimary">
-          Add New {type === 'expense' ? 'Expense' : 'Income'}
-        </Text>
-        <View style={{ width: 40 }} /> {/* Spacer */}
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Type Selector */}
-        <View
-          style={[
-            styles.typeSelectorContainer,
-            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' },
-          ]}
-        >
-          <TouchableOpacity
-            style={[
-              styles.typeButton,
-              type === 'expense' && styles.activeExpenseButton,
-            ]}
-            onPress={() => handleTypeChange('expense')}
-          >
-            <Text
-              variant="body"
-              bold={type === 'expense'}
-              color={type === 'expense' ? 'buttonText' : 'textSecondary'}
-            >
-              Expense
-            </Text>
+      <View style={{ flex: 1, paddingTop: insets.top }}>
+        <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
+            <Ionicons name="close" size={28} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.typeButton,
-              type === 'income' && styles.activeIncomeButton,
-            ]}
-            onPress={() => handleTypeChange('income')}
-          >
-            <Text
-              variant="body"
-              bold={type === 'income'}
-              color={type === 'income' ? 'buttonText' : 'textSecondary'}
-            >
-              Income
-            </Text>
-          </TouchableOpacity>
+          <Text variant="subheading" bold color="textPrimary">Add New {type === 'expense' ? 'Expense' : 'Income'}</Text>
+          <View style={{ width: 40 }} />
         </View>
 
-        {/* Amount Input */}
-        <View style={styles.amountContainer}>
-          <Text variant="caption" color="textTertiary" bold align="center" style={styles.amountLabel}>
-            AMOUNT
-          </Text>
-          <View style={styles.amountRow}>
-            <Text style={[styles.currencySymbol, { color: theme.colors.textPrimary }]}>{currency.symbol}</Text>
-            <TextInput
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="decimal-pad"
-              style={[styles.amountValue, { color: theme.colors.textPrimary }]}
-              placeholder="0.00"
-              placeholderTextColor={theme.colors.textTertiary}
-              autoFocus
-            />
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <View style={[styles.typeSelectorContainer, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
+            <TouchableOpacity style={[styles.typeButton, type === 'expense' && styles.activeExpenseButton]} onPress={() => handleTypeChange('expense')}>
+              <Text variant="body" bold={type === 'expense'} color={type === 'expense' ? 'buttonText' : 'textSecondary'}>Expense</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.typeButton, type === 'income' && styles.activeIncomeButton]} onPress={() => handleTypeChange('income')}>
+              <Text variant="body" bold={type === 'income'} color={type === 'income' ? 'buttonText' : 'textSecondary'}>Income</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Category Section */}
-        <View style={styles.sectionHeader}>
-          <Text variant="subheading" bold color="textPrimary">
-            Category
-          </Text>
-          <TouchableOpacity>
-            <Text variant="link" color="primary">
-              See All
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.categoryGrid}>
-          {categories.map((cat) => (
-            <CategoryCard
-              key={cat.id}
-              label={cat.label}
-              icon={cat.icon}
-              variant="grid"
-              selected={selectedCategory === cat.label}
-              onPress={() => setSelectedCategory(cat.label)}
-            />
-          ))}
-        </View>
-
-        {/* Details Section */}
-        <View style={styles.sectionHeader}>
-          <Text variant="subheading" bold color="textPrimary">
-            Details
-          </Text>
-        </View>
-
-        <View
-          style={[
-            styles.detailsContainer,
-            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' },
-          ]}
-        >
-          {/* Date Picker Item */}
-          <TouchableOpacity style={styles.detailItem}>
-            <View
-              style={[
-                styles.detailIcon,
-                { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' },
-              ]}
-            >
-              <Ionicons name="calendar-outline" size={24} color={theme.colors.textSecondary} />
-            </View>
-            <View style={styles.detailContent}>
-              <Text variant="caption" color="textTertiary" bold>DATE</Text>
-              <Text variant="body" color="textPrimary">Today, Oct 24</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.textTertiary} />
-          </TouchableOpacity>
-
-          {/* Note Item */}
-          <View style={styles.detailItem}>
-            <View
-              style={[
-                styles.detailIcon,
-                { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' },
-              ]}
-            >
-              <Ionicons name="menu-outline" size={24} color={theme.colors.textSecondary} />
-            </View>
-            <View style={styles.detailContent}>
-              <Text variant="caption" color="textTertiary" bold>NOTE</Text>
+          <View style={styles.amountContainer}>
+            <Text variant="caption" color="textTertiary" bold align="center" style={styles.amountLabel}>AMOUNT</Text>
+            <View style={styles.amountRow}>
+              <Text style={[styles.currencySymbol, { color: theme.colors.textPrimary }]}>{currency.symbol}</Text>
               <TextInput
-                value={note}
-                onChangeText={setNote}
-                placeholder="Add a description..."
+                value={amount}
+                onChangeText={setAmount}
+                keyboardType="decimal-pad"
+                style={[styles.amountValue, { color: theme.colors.textPrimary }]}
+                placeholder="0.00"
                 placeholderTextColor={theme.colors.textTertiary}
-                style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                autoFocus
+                returnKeyType="next"
+                onSubmitEditing={() => noteInputRef.current?.focus()}
+                blurOnSubmit={false}
               />
             </View>
           </View>
-
-          {/* Account Item */}
-          <TouchableOpacity style={styles.detailItem}>
-            <View
-              style={[
-                styles.detailIcon,
-                { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' },
-              ]}
-            >
-              <Ionicons name="card-outline" size={24} color={theme.colors.textSecondary} />
+          <View style={styles.sectionHeader}>
+            <Text variant="subheading" bold color="textPrimary">Category</Text>
+            <TouchableOpacity>
+              <Text variant="link" color="primary">See All</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+            {categories.map((cat) => (
+              <CategoryCard
+                key={cat.id}
+                label={cat.label}
+                icon={cat.icon}
+                variant="horizontal"
+                selected={selectedCategory === cat.label}
+                onPress={() => setSelectedCategory(cat.label)}
+              />
+            ))}
+          </ScrollView>
+          <View style={styles.sectionHeader}>
+            <Text variant="subheading" bold color="textPrimary">Details</Text>
+          </View>
+          <View style={[styles.detailsContainer, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
+            <View style={styles.detailItem}>
+              <View style={[styles.detailIcon, { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' }]}>
+                <Ionicons name="menu-outline" size={24} color={theme.colors.textSecondary} />
+              </View>
+              <View style={styles.detailContent}>
+                <Text variant="caption" color="textTertiary" bold>NOTE</Text>
+                <TextInput
+                  ref={noteInputRef}
+                  value={note}
+                  onChangeText={setNote}
+                  placeholder="Add a description..."
+                  placeholderTextColor={theme.colors.textTertiary}
+                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                  returnKeyType="done"
+                  onSubmitEditing={handleSaveExpense}
+                />
+              </View>
             </View>
-            <View style={styles.detailContent}>
-              <Text variant="caption" color="textTertiary" bold>ACCOUNT</Text>
-              <Text variant="body" color="textPrimary">Primary Wallet</Text>
-            </View>
-            <Ionicons name="chevron-down" size={20} color={theme.colors.textTertiary} />
+            <TouchableOpacity style={styles.detailItem}>
+              <View style={[styles.detailIcon, { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' }]}>
+                <Ionicons name="calendar-outline" size={24} color={theme.colors.textSecondary} />
+              </View>
+              <View style={styles.detailContent}>
+                <Text variant="caption" color="textTertiary" bold>DATE</Text>
+                <Text variant="body" color="textPrimary">Today, Oct 24</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textTertiary} />
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.saveButton,
+              {
+                backgroundColor: type === 'expense' ? theme.colors.danger : theme.colors.success,
+                shadowColor: type === 'expense' ? theme.colors.danger : theme.colors.success,
+                marginBottom: insets.bottom + 20,
+              },
+            ]}
+            onPress={handleSaveExpense}
+            activeOpacity={0.8}
+          >
+            <Text variant="button" bold>Save {type === 'expense' ? 'Expense' : 'Income'}</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Save Button */}
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            {
-              backgroundColor: type === 'expense' ? theme.colors.danger : theme.colors.success,
-              shadowColor: type === 'expense' ? theme.colors.danger : theme.colors.success
-            },
-          ]}
-          onPress={handleSaveExpense}
-          activeOpacity={0.8}
-        >
-          <Text variant="button" bold>
-            Save {type === 'expense' ? 'Expense' : 'Income'}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
-
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -361,10 +278,8 @@ const styles = StyleSheet.create({
     marginBottom: staticTheme.spacing.md,
     marginTop: staticTheme.spacing.lg,
   },
-  categoryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -staticTheme.spacing.xs,
+  categoryScroll: {
+    paddingRight: staticTheme.spacing.md,
   },
   detailsContainer: {
     borderRadius: staticTheme.borderRadius.medium,
