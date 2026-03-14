@@ -8,15 +8,17 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import { Text } from '@/components/ui';
 import { useExpenses } from '@/context/ExpenseContext';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function AllCategoriesScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { expenses } = useExpenses();
+  const { expenses, currency } = useExpenses();
+  const { theme, isDark } = useTheme();
 
   const parseDate = (dateStr: string) => {
     if (dateStr.includes('Today')) return new Date();
@@ -69,9 +71,17 @@ export default function AllCategoriesScreen() {
   }, [expenses]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          backgroundColor: theme.colors.background,
+        },
+      ]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
           <Ionicons name="chevron-back" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
@@ -85,7 +95,12 @@ export default function AllCategoriesScreen() {
         <View style={styles.categoryList}>
           {categoriesStats.map((item, index) => (
             <View key={index} style={styles.categoryItem}>
-              <View style={[styles.categoryIcon, { backgroundColor: `${item.color}15` }]}>
+              <View
+                style={[
+                  styles.categoryIcon,
+                  { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : `${item.color}15` },
+                ]}
+              >
                 <Ionicons name={item.icon as any} size={20} color={item.color} />
               </View>
               <View style={styles.categoryContent}>
@@ -96,12 +111,12 @@ export default function AllCategoriesScreen() {
                   </View>
                   <View style={styles.categoryAmountInfo}>
                     <Text variant="body" bold color="textPrimary">
-                      ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      {currency.symbol}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </Text>
                     <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
                   </View>
                 </View>
-                <View style={styles.progressTrack}>
+                <View style={[styles.progressTrack, { backgroundColor: isDark ? '#2C2C2C' : '#F0F0F0' }]}>
                   <View style={[styles.progressBar, { width: `${item.percentage}%`, backgroundColor: item.color }]} />
                 </View>
               </View>
@@ -116,14 +131,13 @@ export default function AllCategoriesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FBFBFB',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.md,
+    paddingVertical: staticTheme.spacing.sm,
   },
   iconButton: {
     width: 40,
@@ -133,16 +147,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContent: {
-    paddingTop: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
+    paddingTop: staticTheme.spacing.md,
+    paddingHorizontal: staticTheme.spacing.md,
   },
   categoryList: {
-    marginTop: theme.spacing.md,
+    marginTop: staticTheme.spacing.md,
   },
   categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
   categoryIcon: {
     width: 44,
@@ -150,7 +164,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: staticTheme.spacing.md,
   },
   categoryContent: {
     flex: 1,
@@ -167,7 +181,6 @@ const styles = StyleSheet.create({
   progressTrack: {
     height: 6,
     width: '100%',
-    backgroundColor: '#F0F0F0',
     borderRadius: 3,
     overflow: 'hidden',
   },

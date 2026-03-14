@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { G, Circle, Path } from 'react-native-svg';
-import { theme } from '@/theme';
+import Svg, { G, Circle } from 'react-native-svg';
+import { theme as staticTheme } from '@/theme';
 import Text from './Text';
+import { useTheme } from '@/context/ThemeContext';
 
 interface DataItem {
   percentage: number;
@@ -16,6 +17,7 @@ interface DonutChartProps {
 }
 
 const DonutChart = ({ data, size = 180, strokeWidth = 25 }: DonutChartProps) => {
+  const { theme, isDark } = useTheme();
   const center = size / 2;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -31,7 +33,7 @@ const DonutChart = ({ data, size = 180, strokeWidth = 25 }: DonutChartProps) => 
             cx={center}
             cy={center}
             r={radius}
-            stroke="#E6F9F5"
+            stroke={isDark ? '#2C2C2C' : '#E6F9F5'}
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -59,7 +61,7 @@ const DonutChart = ({ data, size = 180, strokeWidth = 25 }: DonutChartProps) => 
         </G>
       </Svg>
       <View style={styles.centerText}>
-        <View style={styles.iconCircle}>
+        <View style={[styles.iconCircle, { backgroundColor: isDark ? '#1A332E' : '#E6F9F5' }]}>
           <Text variant="caption" bold style={{ color: theme.colors.primary, fontSize: 18 }}>◐</Text>
         </View>
         <Text variant="caption" color="textTertiary" bold style={{ letterSpacing: 1 }}>CATEGORIES</Text>
@@ -82,7 +84,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E6F9F5',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,

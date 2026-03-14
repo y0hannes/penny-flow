@@ -1,8 +1,9 @@
 import React from 'react';
-import { TouchableOpacity, View, StyleSheet, Switch, Platform } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import Text from './Text';
+import { useTheme } from '@/context/ThemeContext';
 
 interface SettingsItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -29,15 +30,17 @@ const SettingsItem = ({
   destructive = false,
   rightIcon,
 }: SettingsItemProps) => {
+  const { theme, isDark } = useTheme();
+
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#FFFFFF' }]}
       onPress={onPress}
       disabled={showSwitch || !onPress}
       activeOpacity={0.7}
     >
       <View style={styles.leftContent}>
-        <View style={styles.iconBackground}>
+        <View style={[styles.iconBackground, { backgroundColor: isDark ? '#1A332E' : '#E6F9F5' }]}>
           <Ionicons
             name={icon}
             size={22}
@@ -87,9 +90,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: '#FFFFFF',
+    paddingVertical: staticTheme.spacing.md,
+    paddingHorizontal: staticTheme.spacing.md,
   },
   leftContent: {
     flexDirection: 'row',
@@ -100,10 +102,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#E6F9F5', // Light teal background
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: staticTheme.spacing.md,
   },
   label: {
     fontSize: 16,
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   value: {
-    marginRight: theme.spacing.xs,
+    marginRight: staticTheme.spacing.xs,
     fontSize: 16,
   },
 });

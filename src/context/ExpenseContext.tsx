@@ -1,8 +1,17 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Expense } from '@/types/expense';
+import { Expense, Currency, CurrencyCode } from '@/types/expense';
+
+export const currencies: Currency[] = [
+  { code: 'ETB', label: 'Birr', symbol: 'Br' },
+  { code: 'USD', label: 'Dollar', symbol: '$' },
+  { code: 'GBP', label: 'Pound', symbol: '£' },
+  { code: 'EUR', label: 'Euro', symbol: '€' },
+];
 
 interface ExpenseContextType {
   expenses: Expense[];
+  currency: Currency;
+  setCurrency: (code: CurrencyCode) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   deleteExpense: (id: string) => void;
   updateExpense: (id: string, expense: Partial<Expense>) => void;
@@ -168,6 +177,14 @@ const initialExpenses: Expense[] = [
 
 export function ExpenseProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  const [currency, setCurrencyState] = useState<Currency>(currencies[1]); // Default to USD
+
+  const setCurrency = (code: CurrencyCode) => {
+    const newCurrency = currencies.find((c) => c.code === code);
+    if (newCurrency) {
+      setCurrencyState(newCurrency);
+    }
+  };
 
   const addExpense = (expense: Omit<Expense, 'id'>) => {
     const newExpense: Expense = {
@@ -191,7 +208,14 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
 
   return (
     <ExpenseContext.Provider
-      value={{ expenses, addExpense, deleteExpense, updateExpense }}
+      value={{
+        expenses,
+        currency,
+        setCurrency,
+        addExpense,
+        deleteExpense,
+        updateExpense,
+      }}
     >
       {children}
     </ExpenseContext.Provider>

@@ -9,7 +9,8 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Text from './Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { useTheme } from '@/context/ThemeContext';
+import { theme as staticTheme } from '@/theme';
 
 const tabIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home: 'wallet-outline',
@@ -24,6 +25,7 @@ const BottomTabBar = ({
   navigation,
 }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
 
   return (
     <View
@@ -32,7 +34,7 @@ const BottomTabBar = ({
         paddingBottom: insets.bottom,
       }}
     >
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.colors.background, borderTopColor: isDark ? '#2C2C2C' : '#F0F0F0', borderTopWidth: isDark ? 1 : 0 }]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
 
@@ -114,9 +116,8 @@ const BottomTabBar = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.background,
-    paddingTop: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
+    paddingTop: staticTheme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.md,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: staticTheme.spacing.sm,
     position: 'relative',
   },
   label: {
