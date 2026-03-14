@@ -19,11 +19,9 @@ import { useTheme } from '@/context/ThemeContext';
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { currency, setCurrency } = useExpenses();
+  const { currency, setCurrency, wallets } = useExpenses();
   const { theme, isDark, toggleTheme } = useTheme();
 
-  const [budgetAlerts, setBudgetAlerts] = useState(true);
-  const [budget, setBudget] = useState(2500);
   const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
 
   return (
@@ -53,40 +51,13 @@ export default function SettingsScreen() {
             value="English"
             onPress={() => { }}
           />
-        </SettingsSection>
-
-        {/* FINANCIAL SECTION */}
-        <SettingsSection title="Financial">
-          <View style={[styles.budgetCard, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#FFFFFF' }]}>
-            <View style={styles.budgetHeader}>
-              <View style={[styles.budgetIconContainer, { backgroundColor: isDark ? '#1A332E' : '#E6F9F5' }]}>
-                <Ionicons name="wallet-outline" size={22} color={theme.colors.primary} />
-              </View>
-              <Text style={styles.budgetLabel}>Monthly Budget</Text>
-              <Text style={styles.budgetValue}>{currency.symbol}{budget.toLocaleString()}</Text>
-            </View>
-
-            <View style={styles.sliderContainer}>
-              <View style={[styles.sliderTrack, { backgroundColor: isDark ? '#333333' : '#EBEBEB' }]}>
-                <View style={[styles.sliderFill, { width: '25%' }]} />
-                <View style={[styles.sliderThumb, { left: '25%', borderColor: isDark ? theme.colors.background : '#FFFFFF' }]} />
-              </View>
-              <View style={styles.sliderLabels}>
-                <Text variant="caption" color="textTertiary">{currency.symbol}0</Text>
-                <Text variant="caption" color="textTertiary">{currency.symbol}10,000</Text>
-              </View>
-            </View>
-          </View>
-
           <SettingsItem
-            icon="notifications-outline"
-            label="Budget Alerts"
-            showSwitch
-            switchValue={budgetAlerts}
-            onSwitchChange={setBudgetAlerts}
+            icon="wallet-outline"
+            label="Wallets"
+            value={`${wallets.length} Active`}
+            onPress={() => navigation.navigate('Wallets' as never)}
           />
         </SettingsSection>
-
         {/* APP PREFERENCES SECTION */}
         <SettingsSection title="App Preferences">
           <SettingsItem
@@ -194,75 +165,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: staticTheme.spacing.md,
     paddingBottom: staticTheme.spacing.xl,
     paddingTop: staticTheme.spacing.sm,
-  },
-  budgetCard: {
-    padding: staticTheme.spacing.md,
-    borderRadius: 16,
-    marginBottom: staticTheme.spacing.md,
-  },
-  budgetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: staticTheme.spacing.lg,
-  },
-  budgetIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: staticTheme.spacing.md,
-  },
-  budgetLabel: {
-    flex: 1,
-    fontSize: 16,
-  },
-  budgetValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#00D09C', // Keep brand color
-  },
-  sliderContainer: {
-    marginTop: staticTheme.spacing.sm,
-    marginBottom: staticTheme.spacing.xs,
-  },
-  sliderTrack: {
-    height: 6,
-    borderRadius: 3,
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  sliderFill: {
-    height: 6,
-    backgroundColor: '#00D09C',
-    borderRadius: 3,
-    position: 'absolute',
-    left: 0,
-  },
-  sliderThumb: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#00D09C',
-    position: 'absolute',
-    borderWidth: 3,
-    // Shadow
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  sliderLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: staticTheme.spacing.md,
   },
   modalOverlay: {
     flex: 1,

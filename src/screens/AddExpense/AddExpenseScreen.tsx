@@ -9,6 +9,8 @@ import {
   Alert,
   KeyboardAvoidingView,
   Keyboard,
+  FlatList,
+  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,13 +49,15 @@ const incomeCategories = [
 export default function AddExpenseScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { addExpense, currency } = useExpenses();
+  const { addExpense, currency, wallets, primaryWallet } = useExpenses();
   const { theme, isDark } = useTheme();
 
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Food');
   const [note, setNote] = useState('');
+  const [selectedWallet, setSelectedWallet] = useState(primaryWallet || wallets[0]);
+  const [isWalletModalVisible, setIsWalletModalVisible] = useState(false);
   const noteInputRef = useRef<TextInput>(null);
 
   const categories = type === 'expense' ? expenseCategories : incomeCategories;
@@ -84,6 +88,7 @@ export default function AddExpenseScreen() {
       type: type,
       icon: categoryIcons[selectedCategory] || 'cash',
       note,
+      account: selectedWallet?.name || 'Primary Wallet',
     });
 
     // Navigate back
@@ -182,6 +187,23 @@ export default function AddExpenseScreen() {
               </View>
               <Ionicons name="chevron-forward" size={20} color={theme.colors.textTertiary} />
             </TouchableOpacity>
+
+            {/* Wallet Selector (Only show if multiple wallets exist) */}
+            {wallets.length > 1 && (
+              <TouchableOpacity 
+                style={styles.detailItem}
+                onPress={() => setIsWalletModalVisible(true)}
+              >
+                <View style={[styles.detailIcon, { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' }]}>
+                  <Ionicons name="wallet-outline" size={24} color={theme.colors.textSecondary} />
+                </View>
+                <View style={styles.detailContent}>
+                  <Text variant="caption" color="textTertiary" bold>WALLET / BANK</Text>
+                  <Text variant="body" color="textPrimary">{selectedWallet?.name || 'Select Wallet'}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.colors.textTertiary} />
+              </TouchableOpacity>
+            )}
           </View>
           <TouchableOpacity
             style={[
@@ -200,6 +222,52 @@ export default function AddExpenseScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
       </View>
+
+      {/* Wallet Selection Modal */}
+      <Modal
+        visible={isWalletModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsWalletModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
+            <View style={styles.modalHeader}>
+              <Text variant="subheading" bold>Select Wallet / Bank</Text>
+              <TouchableOpacity onPress={() => setIsWalletModalVisible(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={wallets}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.walletOption, { borderBottomColor: isDark ? '#2C2C2C' : '#F9F9F9' }]}
+                  onPress={() => {
+                    setSelectedWallet(item);
+                    setIsWalletModalVisible(false);
+                  }}
+                >
+                  <View style={styles.walletOptionInfo}>
+                    <View style={[styles.walletOptionIcon, { backgroundColor: `${item.color}15` }]}>
+                      <Ionicons name={item.icon as any || 'wallet'} size={20} color={item.color} />
+                    </View>
+                    <View>
+                      <Text variant="body" bold={selectedWallet?.id === item.id}>{item.name}</Text>
+                      <Text variant="caption" color="textTertiary">{currency.symbol}{item.balance.toLocaleString()}</Text>
+                    </View>
+                  </View>
+                  {selectedWallet?.id === item.id && (
+                    <Ionicons name="checkmark-circle" size={24} color={theme.colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -325,5 +393,44 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
     }),
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: staticTheme.spacing.lg,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#EBEBEB',
+  },
+  walletOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: staticTheme.spacing.lg,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#F0F0F0',
+  },
+  walletOptionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  walletOptionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: staticTheme.spacing.md,
   },
 });

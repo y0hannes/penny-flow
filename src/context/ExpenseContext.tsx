@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Expense, Currency, CurrencyCode } from '@/types/expense';
+import { Expense, Currency, CurrencyCode, Wallet } from '@/types/expense';
 
 export const currencies: Currency[] = [
   { code: 'ETB', label: 'Birr', symbol: 'Br' },
@@ -15,11 +15,44 @@ interface ExpenseContextType {
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   deleteExpense: (id: string) => void;
   updateExpense: (id: string, expense: Partial<Expense>) => void;
+  wallets: Wallet[];
+  addWallet: (wallet: Omit<Wallet, 'id'>) => void;
+  updateWallet: (id: string, updatedData: Partial<Wallet>) => void;
+  deleteWallet: (id: string) => void;
+  setPrimaryWallet: (id: string) => void;
+  primaryWallet: Wallet | undefined;
 }
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 
 // Mock data
+const initialWallets: Wallet[] = [
+  {
+    id: 'w1',
+    name: 'Primary Wallet',
+    balance: 4250.00,
+    color: '#00D09C',
+    icon: 'wallet',
+    isPrimary: true,
+  },
+  {
+    id: 'w2',
+    name: 'Savings Account',
+    balance: 12800.50,
+    color: '#4D9AFF',
+    icon: 'card',
+    isPrimary: false,
+  },
+  {
+    id: 'w3',
+    name: 'Investment',
+    balance: 2450.00,
+    color: '#9C27B0',
+    icon: 'trending-up',
+    isPrimary: false,
+  },
+];
+
 // Mock data spanning across months and years
 const initialExpenses: Expense[] = [
   // MARCH 2026 (Current Month)
@@ -178,6 +211,9 @@ const initialExpenses: Expense[] = [
 export function ExpenseProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
   const [currency, setCurrencyState] = useState<Currency>(currencies[1]); // Default to USD
+  const [wallets, setWallets] = useState<Wallet[]>(initialWallets);
+
+  const primaryWallet = wallets.find(w => w.isPrimary) || wallets[0];
 
   const setCurrency = (code: CurrencyCode) => {
     const newCurrency = currencies.find((c) => c.code === code);
@@ -191,6 +227,18 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
       ...expense,
       id: Date.now().toString(), // Simple ID generation
     };
+    
+    // Update the corresponding wallet balance
+    setWallets((prev) => 
+      prev.map(wallet => {
+        if (wallet.name === expense.account) {
+          const balanceChange = expense.type === 'expense' ? -expense.amount : expense.amount;
+          return { ...wallet, balance: wallet.balance + balanceChange };
+        }
+        return wallet;
+      })
+    );
+
     setExpenses((prev) => [newExpense, ...prev]); // Add to beginning of array
   };
 
@@ -206,6 +254,49 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // Wallet Operations
+  const addWallet = (wallet: Omit<Wallet, 'id'>) => {
+    const newWallet: Wallet = {
+      ...wallet,
+      id: Date.now().toString(),
+    };
+    if (wallet.isPrimary) {
+      setWallets((prev) => prev.map(w => ({ ...w, isPrimary: false })).concat(newWallet));
+    } else {
+      setWallets((prev) => [...prev, newWallet]);
+    }
+  };
+
+  const updateWallet = (id: string, updatedData: Partial<Wallet>) => {
+    setWallets((prev) => {
+      let next = prev.map((w) => (w.id === id ? { ...w, ...updatedData } : w));
+      if (updatedData.isPrimary) {
+        next = next.map((w) => (w.id === id ? w : { ...w, isPrimary: false }));
+      }
+      return next;
+    });
+  };
+
+  const deleteWallet = (id: string) => {
+    setWallets((prev) => {
+      const filtered = prev.filter((w) => w.id !== id);
+      // Ensure at least one primary wallet if we deleted the primary one
+      if (filtered.length > 0 && !filtered.find(w => w.isPrimary)) {
+        filtered[0].isPrimary = true;
+      }
+      return filtered;
+    });
+  };
+
+  const setPrimaryWallet = (id: string) => {
+    setWallets((prev) =>
+      prev.map((w) => ({
+        ...w,
+        isPrimary: w.id === id,
+      }))
+    );
+  };
+
   return (
     <ExpenseContext.Provider
       value={{
@@ -215,6 +306,12 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         addExpense,
         deleteExpense,
         updateExpense,
+        wallets,
+        addWallet,
+        updateWallet,
+        deleteWallet,
+        setPrimaryWallet,
+        primaryWallet,
       }}
     >
       {children}

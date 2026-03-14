@@ -26,3 +26,12 @@ export interface Currency {
   label: string;
   symbol: string;
 }
+
+export interface Wallet {
+  id: string;
+  name: string;
+  balance: number;
+  color: string;
+  icon: string;
+  isPrimary: boolean;
+}
