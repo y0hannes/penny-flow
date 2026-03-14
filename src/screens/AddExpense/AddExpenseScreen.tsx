@@ -10,10 +10,11 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import { Text, CategoryCard } from '@/components/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useExpenses } from '@/context/ExpenseContext';
+import { useTheme } from '@/context/ThemeContext';
 
 // Icon mapping for categories
 const categoryIcons: Record<string, string> = {
@@ -45,6 +46,7 @@ export default function AddExpenseScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { addExpense, currency } = useExpenses();
+  const { theme, isDark } = useTheme();
 
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState('');
@@ -88,9 +90,18 @@ export default function AddExpenseScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          backgroundColor: theme.colors.background,
+        },
+      ]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
           <Ionicons name="close" size={28} color={theme.colors.textPrimary} />
         </TouchableOpacity>
@@ -102,7 +113,12 @@ export default function AddExpenseScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Type Selector */}
-        <View style={styles.typeSelectorContainer}>
+        <View
+          style={[
+            styles.typeSelectorContainer,
+            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' },
+          ]}
+        >
           <TouchableOpacity
             style={[
               styles.typeButton,
@@ -141,12 +157,12 @@ export default function AddExpenseScreen() {
             AMOUNT
           </Text>
           <View style={styles.amountRow}>
-            <Text style={styles.currencySymbol}>{currency.symbol}</Text>
+            <Text style={[styles.currencySymbol, { color: theme.colors.textPrimary }]}>{currency.symbol}</Text>
             <TextInput
               value={amount}
               onChangeText={setAmount}
               keyboardType="decimal-pad"
-              style={styles.amountValue}
+              style={[styles.amountValue, { color: theme.colors.textPrimary }]}
               placeholder="0.00"
               placeholderTextColor={theme.colors.textTertiary}
               autoFocus
@@ -186,10 +202,20 @@ export default function AddExpenseScreen() {
           </Text>
         </View>
 
-        <View style={styles.detailsContainer}>
+        <View
+          style={[
+            styles.detailsContainer,
+            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' },
+          ]}
+        >
           {/* Date Picker Item */}
           <TouchableOpacity style={styles.detailItem}>
-            <View style={styles.detailIcon}>
+            <View
+              style={[
+                styles.detailIcon,
+                { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' },
+              ]}
+            >
               <Ionicons name="calendar-outline" size={24} color={theme.colors.textSecondary} />
             </View>
             <View style={styles.detailContent}>
@@ -201,7 +227,12 @@ export default function AddExpenseScreen() {
 
           {/* Note Item */}
           <View style={styles.detailItem}>
-            <View style={styles.detailIcon}>
+            <View
+              style={[
+                styles.detailIcon,
+                { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' },
+              ]}
+            >
               <Ionicons name="menu-outline" size={24} color={theme.colors.textSecondary} />
             </View>
             <View style={styles.detailContent}>
@@ -211,14 +242,19 @@ export default function AddExpenseScreen() {
                 onChangeText={setNote}
                 placeholder="Add a description..."
                 placeholderTextColor={theme.colors.textTertiary}
-                style={styles.textInput}
+                style={[styles.textInput, { color: theme.colors.textPrimary }]}
               />
             </View>
           </View>
 
           {/* Account Item */}
           <TouchableOpacity style={styles.detailItem}>
-            <View style={styles.detailIcon}>
+            <View
+              style={[
+                styles.detailIcon,
+                { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' },
+              ]}
+            >
               <Ionicons name="card-outline" size={24} color={theme.colors.textSecondary} />
             </View>
             <View style={styles.detailContent}>
@@ -233,7 +269,10 @@ export default function AddExpenseScreen() {
         <TouchableOpacity
           style={[
             styles.saveButton,
-            { backgroundColor: type === 'expense' ? theme.colors.danger : theme.colors.success }
+            {
+              backgroundColor: type === 'expense' ? theme.colors.danger : theme.colors.success,
+              shadowColor: type === 'expense' ? theme.colors.danger : theme.colors.success
+            },
           ]}
           onPress={handleSaveExpense}
           activeOpacity={0.8}
@@ -251,14 +290,13 @@ export default function AddExpenseScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.md,
+    paddingVertical: staticTheme.spacing.sm,
   },
   closeButton: {
     width: 40,
@@ -267,17 +305,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContent: {
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
+    paddingHorizontal: staticTheme.spacing.md,
+    paddingTop: staticTheme.spacing.xl,
+    paddingBottom: staticTheme.spacing.xl,
   },
   amountContainer: {
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
+    marginBottom: staticTheme.spacing.xl,
   },
   amountLabel: {
     letterSpacing: 1.5,
-    marginBottom: theme.spacing.sm,
+    marginBottom: staticTheme.spacing.sm,
   },
   amountRow: {
     flexDirection: 'row',
@@ -286,92 +324,84 @@ const styles = StyleSheet.create({
   },
   currencySymbol: {
     fontSize: 40,
-    fontFamily: theme.fonts.bold,
-    color: theme.colors.textPrimary,
+    fontFamily: staticTheme.fonts.bold,
     marginRight: 4,
     marginTop: 8,
   },
   amountValue: {
     fontSize: 64,
-    fontFamily: theme.fonts.bold,
-    color: theme.colors.textPrimary,
+    fontFamily: staticTheme.fonts.bold,
     minWidth: 150,
     textAlign: 'center',
     padding: 0,
   },
   typeSelectorContainer: {
     flexDirection: 'row',
-    backgroundColor: '#F7F8F9',
-    borderRadius: theme.borderRadius.medium,
+    borderRadius: staticTheme.borderRadius.medium,
     padding: 4,
-    marginBottom: theme.spacing.xl,
+    marginBottom: staticTheme.spacing.xl,
   },
   typeButton: {
     flex: 1,
     height: 40,
-    borderRadius: theme.borderRadius.medium - 4,
+    borderRadius: staticTheme.borderRadius.medium - 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
   activeExpenseButton: {
-    backgroundColor: theme.colors.danger,
+    backgroundColor: '#FF4D4D',
   },
   activeIncomeButton: {
-    backgroundColor: theme.colors.success,
+    backgroundColor: '#00D09C',
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
-    marginTop: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.md,
+    marginTop: staticTheme.spacing.lg,
   },
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -theme.spacing.xs,
+    marginHorizontal: -staticTheme.spacing.xs,
   },
   detailsContainer: {
-    backgroundColor: '#F7F8F9',
-    borderRadius: theme.borderRadius.medium,
-    padding: theme.spacing.sm,
-    marginBottom: theme.spacing.xl,
+    borderRadius: staticTheme.borderRadius.medium,
+    padding: staticTheme.spacing.sm,
+    marginBottom: staticTheme.spacing.xl,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: staticTheme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.sm,
   },
   detailIcon: {
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: staticTheme.spacing.md,
   },
   detailContent: {
     flex: 1,
   },
   textInput: {
     fontSize: 16,
-    color: theme.colors.textPrimary,
     padding: 0,
     marginTop: 2,
   },
   saveButton: {
-    backgroundColor: theme.colors.primary,
     height: 56,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: theme.spacing.lg,
+    marginTop: staticTheme.spacing.lg,
     // Shadow for depth
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

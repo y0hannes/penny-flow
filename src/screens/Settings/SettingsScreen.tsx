@@ -4,32 +4,32 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Switch,
   Platform,
   Modal,
   FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import { Text, SettingsItem, SettingsSection } from '@/components/ui';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useExpenses, currencies } from '@/context/ExpenseContext';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { currency, setCurrency } = useExpenses();
+  const { theme, isDark, toggleTheme } = useTheme();
 
   const [budgetAlerts, setBudgetAlerts] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [budget, setBudget] = useState(2500);
   const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color={theme.colors.textPrimary} />
         </TouchableOpacity>
@@ -57,9 +57,9 @@ export default function SettingsScreen() {
 
         {/* FINANCIAL SECTION */}
         <SettingsSection title="Financial">
-          <View style={styles.budgetCard}>
+          <View style={[styles.budgetCard, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#FFFFFF' }]}>
             <View style={styles.budgetHeader}>
-              <View style={styles.budgetIconContainer}>
+              <View style={[styles.budgetIconContainer, { backgroundColor: isDark ? '#1A332E' : '#E6F9F5' }]}>
                 <Ionicons name="wallet-outline" size={22} color={theme.colors.primary} />
               </View>
               <Text style={styles.budgetLabel}>Monthly Budget</Text>
@@ -67,9 +67,9 @@ export default function SettingsScreen() {
             </View>
 
             <View style={styles.sliderContainer}>
-              <View style={styles.sliderTrack}>
+              <View style={[styles.sliderTrack, { backgroundColor: isDark ? '#333333' : '#EBEBEB' }]}>
                 <View style={[styles.sliderFill, { width: '25%' }]} />
-                <View style={[styles.sliderThumb, { left: '25%' }]} />
+                <View style={[styles.sliderThumb, { left: '25%', borderColor: isDark ? theme.colors.background : '#FFFFFF' }]} />
               </View>
               <View style={styles.sliderLabels}>
                 <Text variant="caption" color="textTertiary">{currency.symbol}0</Text>
@@ -93,8 +93,8 @@ export default function SettingsScreen() {
             icon="moon-outline"
             label="Dark Mode"
             showSwitch
-            switchValue={darkMode}
-            onSwitchChange={setDarkMode}
+            switchValue={isDark}
+            onSwitchChange={toggleTheme}
           />
           <SettingsItem
             icon="notifications-outline"
@@ -127,8 +127,8 @@ export default function SettingsScreen() {
         onRequestClose={() => setIsCurrencyModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: isDark ? '#2C2C2C' : '#F5F5F5' }]}>
               <Text variant="subheading" bold>Select Currency</Text>
               <TouchableOpacity onPress={() => setIsCurrencyModalVisible(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
@@ -139,15 +139,15 @@ export default function SettingsScreen() {
               keyExtractor={(item) => item.code}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.currencyOption}
+                  style={[styles.currencyOption, { borderBottomColor: isDark ? '#2C2C2C' : '#F9F9F9' }]}
                   onPress={() => {
                     setCurrency(item.code);
                     setIsCurrencyModalVisible(false);
                   }}
                 >
                   <View style={styles.currencyInfo}>
-                    <View style={styles.currencySymbolCircle}>
-                      <Text style={styles.currencySymbolText}>{item.symbol}</Text>
+                    <View style={[styles.currencySymbolCircle, { backgroundColor: isDark ? '#2C2C2C' : '#F5F6F8' }]}>
+                      <Text style={[styles.currencySymbolText, { color: theme.colors.textPrimary }]}>{item.symbol}</Text>
                     </View>
                     <Text variant="body" bold={currency.code === item.code}>
                       {item.label} ({item.code})
@@ -171,75 +171,70 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8F9',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: theme.spacing.md,
-    backgroundColor: '#F7F8F9',
+    paddingVertical: staticTheme.spacing.md,
     position: 'relative',
     minHeight: 56,
   },
   backButton: {
     position: 'absolute',
-    left: theme.spacing.md,
-    padding: theme.spacing.xs,
+    left: staticTheme.spacing.md,
+    padding: staticTheme.spacing.xs,
     zIndex: 1,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: theme.colors.textPrimary,
   },
   scrollContent: {
-    paddingHorizontal: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
-    paddingTop: theme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.md,
+    paddingBottom: staticTheme.spacing.xl,
+    paddingTop: staticTheme.spacing.sm,
   },
   budgetCard: {
-    padding: theme.spacing.md,
-    backgroundColor: '#FFFFFF',
+    padding: staticTheme.spacing.md,
+    borderRadius: 16,
+    marginBottom: staticTheme.spacing.md,
   },
   budgetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
   budgetIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#E6F9F5',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: staticTheme.spacing.md,
   },
   budgetLabel: {
     flex: 1,
     fontSize: 16,
-    color: '#1A1A1A',
   },
   budgetValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: theme.colors.primary,
+    color: '#00D09C', // Keep brand color
   },
   sliderContainer: {
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
+    marginTop: staticTheme.spacing.sm,
+    marginBottom: staticTheme.spacing.xs,
   },
   sliderTrack: {
     height: 6,
-    backgroundColor: '#EBEBEB',
     borderRadius: 3,
     position: 'relative',
     justifyContent: 'center',
   },
   sliderFill: {
     height: 6,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#00D09C',
     borderRadius: 3,
     position: 'absolute',
     left: 0,
@@ -248,10 +243,9 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#00D09C',
     position: 'absolute',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
     // Shadow
     ...Platform.select({
       ios: {
@@ -268,7 +262,7 @@ const styles = StyleSheet.create({
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: theme.spacing.md,
+    marginTop: staticTheme.spacing.md,
   },
   modalOverlay: {
     flex: 1,
@@ -276,7 +270,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '70%',
@@ -286,17 +279,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: theme.spacing.lg,
+    padding: staticTheme.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
   },
   currencyOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: theme.spacing.lg,
+    padding: staticTheme.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#F9F9F9',
   },
   currencyInfo: {
     flexDirection: 'row',
@@ -306,14 +297,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F5F6F8',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: staticTheme.spacing.md,
   },
   currencySymbolText: {
     fontSize: 18,
     fontWeight: '700',
-    color: theme.colors.textPrimary,
   },
 });

@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
+import { useTheme } from '@/context/ThemeContext';
 
 interface FloatingActionButtonProps {
   onPress: () => void;
@@ -18,6 +19,8 @@ const FloatingActionButton = ({
   bottom = 20,
   right = 20,
 }: FloatingActionButtonProps) => {
+  const { theme } = useTheme();
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -30,6 +33,8 @@ const FloatingActionButton = ({
           borderRadius: size / 2,
           bottom: bottom,
           right: right,
+          backgroundColor: theme.colors.primary,
+          shadowColor: theme.colors.primary,
         },
       ]}
     >
@@ -41,12 +46,10 @@ const FloatingActionButton = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: theme.colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

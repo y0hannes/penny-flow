@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import Text from './Text';
+import { useTheme } from '@/context/ThemeContext';
+import { useExpenses } from '@/context/ExpenseContext';
 
 interface CategoryCardProps {
   label: string;
@@ -14,7 +16,7 @@ interface CategoryCardProps {
 }
 
 const { width } = Dimensions.get('window');
-const GRID_WIDTH = (width - theme.spacing.md * 2 - theme.spacing.sm * 2) / 3;
+const GRID_WIDTH = (width - staticTheme.spacing.md * 2 - staticTheme.spacing.sm * 2) / 3;
 
 const CategoryCard = ({
   label,
@@ -24,6 +26,8 @@ const CategoryCard = ({
   onPress,
   variant = 'horizontal',
 }: CategoryCardProps) => {
+  const { theme, isDark } = useTheme();
+  const { currency } = useExpenses();
   const isGrid = variant === 'grid';
 
   return (
@@ -32,14 +36,16 @@ const CategoryCard = ({
       onPress={onPress}
       style={[
         styles.container,
-        isGrid ? styles.gridContainer : styles.horizontalContainer,
-        selected && styles.selectedContainer,
+        { backgroundColor: theme.colors.background, borderColor: isDark ? '#2C2C2C' : '#F0F0F0' },
+        isGrid && { width: GRID_WIDTH, aspectRatio: 1, backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9', margin: staticTheme.spacing.xs },
+        variant === 'horizontal' && { width: 100, marginRight: staticTheme.spacing.md, borderWidth: 1 },
+        selected && { backgroundColor: isDark ? '#003328' : '#E8FAF6', borderColor: theme.colors.primary },
       ]}
     >
       <View
         style={[
           styles.iconCircle,
-          { backgroundColor: selected ? theme.colors.primary : '#F7F8F9' },
+          { backgroundColor: selected ? theme.colors.primary : (isDark ? '#2C2C2C' : '#F7F8F9') },
         ]}
       >
         <Ionicons
@@ -52,7 +58,7 @@ const CategoryCard = ({
       <Text
         variant="caption"
         bold
-        color={selected ? 'textPrimary' : 'textPrimary'}
+        color="textPrimary"
         style={styles.label}
       >
         {label}
@@ -60,7 +66,7 @@ const CategoryCard = ({
 
       {amount !== undefined && (
         <Text variant="caption" color="textTertiary">
-          ${amount.toFixed(2)}
+          {currency.symbol}{amount.toFixed(2)}
         </Text>
       )}
     </TouchableOpacity>
@@ -69,29 +75,10 @@ const CategoryCard = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.medium,
+    borderRadius: staticTheme.borderRadius.medium,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  gridContainer: {
-    width: GRID_WIDTH,
-    aspectRatio: 1,
-    backgroundColor: '#F7F8F9',
-    margin: theme.spacing.xs,
-  },
-  horizontalContainer: {
-    width: 100,
-    marginRight: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-  },
-  selectedContainer: {
-    backgroundColor: '#E8FAF6',
-    borderColor: theme.colors.primary,
+    padding: staticTheme.spacing.md,
   },
   iconCircle: {
     width: 48,
@@ -99,7 +86,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing.sm,
+    marginBottom: staticTheme.spacing.sm,
   },
   label: {
     marginBottom: 2,

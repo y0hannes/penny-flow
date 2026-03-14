@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import Text from './Text';
+import { useTheme } from '@/context/ThemeContext';
 
 interface SettingsSectionProps {
   title: string;
@@ -9,19 +10,21 @@ interface SettingsSectionProps {
 }
 
 const SettingsSection = ({ title, children }: SettingsSectionProps) => {
+  const { theme, isDark } = useTheme();
+
   return (
     <View style={styles.container}>
       <Text variant="caption" color="textSecondary" bold style={styles.title}>
         {title.toUpperCase()}
       </Text>
-      <View style={styles.content}>
+      <View style={[styles.content, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#FFFFFF' }]}>
         {React.Children.map(children, (child, index) => (
-          <>
+          <React.Fragment key={index}>
             {child}
             {index < React.Children.count(children) - 1 && (
-              <View style={styles.separator} />
+              <View style={[styles.separator, { backgroundColor: isDark ? '#2C2C2C' : '#F7F8F9' }]} />
             )}
-          </>
+          </React.Fragment>
         ))}
       </View>
     </View>
@@ -30,26 +33,22 @@ const SettingsSection = ({ title, children }: SettingsSectionProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
   title: {
-    paddingHorizontal: theme.spacing.xs,
-    paddingBottom: theme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.xs,
+    paddingBottom: staticTheme.spacing.sm,
     letterSpacing: 1.2,
     fontSize: 14,
-    color: '#1A1A1A', // Darker gray for section headers
     fontWeight: '700' as const,
   },
   content: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20, // More rounded corners
+    borderRadius: 20,
     overflow: 'hidden',
-    // Remove border, use shadow or just clean separation
   },
   separator: {
     height: 1,
-    backgroundColor: '#F7F8F9',
-    marginLeft: theme.spacing.md + 40 + theme.spacing.md, // icon space + padding
+    marginLeft: staticTheme.spacing.md + 40 + staticTheme.spacing.md,
   },
 });
 

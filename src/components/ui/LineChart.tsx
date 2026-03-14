@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle } from 'react-native-svg';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
+import { useTheme } from '@/context/ThemeContext';
 
 interface LineChartProps {
   data: number[];
@@ -14,6 +15,8 @@ const LineChart = ({
   width = Dimensions.get('window').width - 64,
   height = 100
 }: LineChartProps) => {
+  const { theme, isDark } = useTheme();
+
   if (data.length < 2) return null;
 
   const max = Math.max(...data);
@@ -45,7 +48,7 @@ const LineChart = ({
         <Path d={linePath} stroke={theme.colors.primary} strokeWidth="3" fill="none" strokeLinejoin="round" />
 
         {/* Intersection point from image */}
-        <Circle cx={lastPoint.x} cy={lastPoint.y} r="5" fill="#FFFFFF" stroke={theme.colors.primary} strokeWidth="2" />
+        <Circle cx={lastPoint.x} cy={lastPoint.y} r="5" fill={isDark ? theme.colors.background : "#FFFFFF"} stroke={theme.colors.primary} strokeWidth="2" />
       </Svg>
     </View>
   );

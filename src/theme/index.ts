@@ -42,19 +42,19 @@ export interface Theme {
   };
 }
 
-export const theme: Theme = {
+export const lightTheme: Theme = {
   colors: {
-    primary: '#00D09C', // More vibrant and polished Teal
+    primary: '#00D09C',
     background: '#FFFFFF',
-    textPrimary: '#1A1A1A', // Slightly softer black
-    textSecondary: '#7A7A7A', // Better gray for labels
-    textTertiary: '#BDBDBD', // Lighter gray
+    textPrimary: '#1A1A1A',
+    textSecondary: '#7A7A7A',
+    textTertiary: '#BDBDBD',
     success: '#00D09C',
     warning: '#FFB100',
     danger: '#FF4D4D',
     border: '#F0F0F0',
     buttonText: '#FFFFFF',
-    selectedCategoryBg: '#E6F9F5', // Light teal background
+    selectedCategoryBg: '#E6F9F5',
     unselectedCategoryBg: '#F7F8F9',
     link: '#00D09C',
     nonActive: '#BDBDBD',
@@ -65,21 +65,38 @@ export const theme: Theme = {
     bold: Platform.OS === 'ios' ? 'System-Bold' : 'Roboto-Bold',
   },
   fontSizes: {
-    small: 12, // "See All", placeholders
-    medium: 16, // Field values, category names
-    large: 20, // Section headers like "Category", "Details"
-    xlarge: 48, // Large amount "$0.00"
+    small: 12,
+    medium: 16,
+    large: 20,
+    xlarge: 48,
   },
   spacing: {
-    xs: 4, // Small gaps
-    sm: 8, // Between elements
-    md: 16, // Section padding
-    lg: 24, // Larger margins
-    xl: 32, // Major spacing
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
   },
   borderRadius: {
-    small: 8, // Category buttons
-    medium: 12, // Input fields
-    large: 24, // Full-width button
+    small: 8,
+    medium: 12,
+    large: 24,
   },
 };
+
+export const darkTheme: Theme = {
+  ...lightTheme,
+  colors: {
+    ...lightTheme.colors,
+    background: '#121212',
+    textPrimary: '#FFFFFF',
+    textSecondary: '#A0A0A0',
+    textTertiary: '#666666',
+    border: '#2C2C2C',
+    unselectedCategoryBg: '#1E1E1E',
+    selectedCategoryBg: '#0F2D26',
+    buttonText: '#FFFFFF',
+  },
+};
+
+export const theme = lightTheme;
