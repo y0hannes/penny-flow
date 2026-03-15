@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Expense, Currency, CurrencyCode, Wallet } from '@/types/expense';
+import { supabase } from '@/lib/supabase';
 
 export const currencies: Currency[] = [
   { code: 'ETB', label: 'Birr', symbol: 'Br' },
@@ -25,188 +26,9 @@ interface ExpenseContextType {
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 
-// Mock data
-const initialWallets: Wallet[] = [
-  {
-    id: 'w1',
-    name: 'Primary Wallet',
-    balance: 4250.00,
-    color: '#00D09C',
-    icon: 'wallet',
-    isPrimary: true,
-  },
-  {
-    id: 'w2',
-    name: 'Savings Account',
-    balance: 12800.50,
-    color: '#4D9AFF',
-    icon: 'card',
-    isPrimary: false,
-  },
-  {
-    id: 'w3',
-    name: 'Investment',
-    balance: 2450.00,
-    color: '#9C27B0',
-    icon: 'trending-up',
-    isPrimary: false,
-  },
-];
-
-// Mock data spanning across months and years
-const initialExpenses: Expense[] = [
-  // MARCH 2026 (Current Month)
-  {
-    id: '1',
-    title: 'Starbucks Coffee',
-    category: 'Food',
-    amount: 5.4,
-    date: 'Today, 09:45 AM',
-    type: 'expense',
-    icon: 'cafe',
-    note: 'Morning coffee',
-    account: 'Primary Wallet',
-  },
-  {
-    id: '2',
-    title: 'Uber Trip',
-    category: 'Transport',
-    amount: 12.5,
-    date: 'Yesterday, 08:20 PM',
-    type: 'expense',
-    icon: 'car',
-    note: 'Trip to downtown',
-    account: 'Primary Wallet',
-  },
-  {
-    id: 'm1',
-    title: 'Rent Payment',
-    category: 'Housing',
-    amount: 1700.0,
-    date: 'Mar 01, 2026',
-    type: 'expense',
-    icon: 'home',
-    account: 'Bank Account',
-  },
-  {
-    id: 'm2',
-    title: 'Salary Deposit',
-    category: 'Income',
-    amount: 4500.0,
-    date: 'Mar 01, 2026',
-    type: 'income',
-    icon: 'wallet',
-    account: 'Bank Account',
-  },
-  {
-    id: 'm3',
-    title: 'Grocery Store',
-    category: 'Food',
-    amount: 156.40,
-    date: 'Mar 05, 2026',
-    type: 'expense',
-    icon: 'basket',
-    account: 'Primary Wallet',
-  },
-  {
-    id: 'm4',
-    title: 'Electricity Bill',
-    category: 'Bills',
-    amount: 85.20,
-    date: 'Mar 10, 2026',
-    type: 'expense',
-    icon: 'flash',
-    account: 'Bank Account',
-  },
-
-  // FEBRUARY 2026
-  {
-    id: 'f1',
-    title: 'Freelance Work',
-    category: 'Income',
-    amount: 850.0,
-    date: 'Feb 15, 2026',
-    type: 'income',
-    icon: 'cash',
-    account: 'Primary Wallet',
-  },
-  {
-    id: 'f2',
-    title: 'Gym Membership',
-    category: 'Health',
-    amount: 50.0,
-    date: 'Feb 01, 2026',
-    type: 'expense',
-    icon: 'fitness',
-    account: 'Bank Account',
-  },
-  {
-    id: 'f3',
-    title: 'New Shoes',
-    category: 'Shopping',
-    amount: 120.0,
-    date: 'Feb 20, 2026',
-    type: 'expense',
-    icon: 'cart',
-    account: 'Primary Wallet',
-  },
-
-  // JANUARY 2026
-  {
-    id: 'j1',
-    title: 'New Year Party',
-    category: 'Entertainment',
-    amount: 200.0,
-    date: 'Jan 01, 2026',
-    type: 'expense',
-    icon: 'wine',
-    account: 'Primary Wallet',
-  },
-  {
-    id: 'j2',
-    title: 'Flight Tickets',
-    category: 'Transport',
-    amount: 450.0,
-    date: 'Jan 10, 2026',
-    type: 'expense',
-    icon: 'airplane',
-    account: 'Bank Account',
-  },
-
-  // DECEMBER 2025
-  {
-    id: 'd1',
-    title: 'Christmas Gifts',
-    category: 'Shopping',
-    amount: 500.0,
-    date: 'Dec 24, 2025',
-    type: 'expense',
-    icon: 'gift',
-    account: 'Primary Wallet',
-  },
-  {
-    id: 'd2',
-    title: 'End of Year Bonus',
-    category: 'Income',
-    amount: 2000.0,
-    date: 'Dec 15, 2025',
-    type: 'income',
-    icon: 'trending-up',
-    account: 'Bank Account',
-  },
-
-  // NOVEMBER 2025
-  {
-    id: 'n1',
-    title: 'Thanksgiving Dinner',
-    category: 'Food',
-    amount: 150.0,
-    date: 'Nov 25, 2025',
-    type: 'expense',
-    icon: 'restaurant',
-    account: 'Primary Wallet',
-  },
-];
+// Initial data is now empty, will be fetched from Supabase
+const initialWallets: Wallet[] = [];
+const initialExpenses: Expense[] = [];
 
 export function ExpenseProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
@@ -215,6 +37,70 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
 
   const primaryWallet = wallets.find(w => w.isPrimary) || wallets[0];
 
+  useEffect(() => {
+    fetchData();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        fetchData();
+      } else {
+        // Clear data on logout
+        setExpenses([]);
+        setWallets([]);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Fetch Wallets
+    const { data: walletData, error: walletError } = await supabase
+      .from('wallets')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (!walletError && walletData) {
+      setWallets(walletData.map(w => ({
+        id: w.id,
+        name: w.name,
+        balance: parseFloat(w.balance),
+        color: w.color,
+        icon: w.icon,
+        isPrimary: w.is_primary,
+      })));
+    }
+
+    // Fetch Transactions
+    const { data: transData, error: transError } = await supabase
+      .from('transactions')
+      .select(`
+        *,
+        wallets (name)
+      `)
+      .order('date', { ascending: false });
+
+    if (!transError && transData) {
+      setExpenses(transData.map(t => ({
+        id: t.id,
+        title: t.title,
+        category: t.category,
+        amount: parseFloat(t.amount),
+        date: new Date(t.date).toLocaleDateString(), // Simple formatting
+        type: t.type,
+        icon: t.icon,
+        note: t.note,
+        account: t.wallets?.name || 'Unknown',
+      })));
+    }
+  };
+
   const setCurrency = (code: CurrencyCode) => {
     const newCurrency = currencies.find((c) => c.code === code);
     if (newCurrency) {
@@ -222,79 +108,169 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addExpense = (expense: Omit<Expense, 'id'>) => {
-    const newExpense: Expense = {
-      ...expense,
-      id: Date.now().toString(), // Simple ID generation
-    };
-    
-    // Update the corresponding wallet balance
-    setWallets((prev) => 
-      prev.map(wallet => {
-        if (wallet.name === expense.account) {
-          const balanceChange = expense.type === 'expense' ? -expense.amount : expense.amount;
-          return { ...wallet, balance: wallet.balance + balanceChange };
-        }
-        return wallet;
+  const addExpense = async (expense: Omit<Expense, 'id'>) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const wallet = wallets.find(w => w.name === expense.account);
+    if (!wallet) return;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        user_id: user.id,
+        wallet_id: wallet.id,
+        title: expense.title,
+        category: expense.category,
+        amount: expense.amount,
+        type: expense.type,
+        icon: expense.icon,
+        note: expense.note,
+        date: new Date().toISOString(),
       })
-    );
+      .select()
+      .single();
 
-    setExpenses((prev) => [newExpense, ...prev]); // Add to beginning of array
-  };
+    if (!error && data) {
+      // Update local state
+      setExpenses(prev => [{ ...expense, id: data.id }, ...prev]);
+      
+      // Update wallet balance in DB
+      const balanceChange = expense.type === 'expense' ? -expense.amount : expense.amount;
+      const newBalance = wallet.balance + balanceChange;
+      
+      await supabase
+        .from('wallets')
+        .update({ balance: newBalance })
+        .eq('id', wallet.id);
 
-  const deleteExpense = (id: string) => {
-    setExpenses((prev) => prev.filter((expense) => expense.id !== id));
-  };
-
-  const updateExpense = (id: string, updatedData: Partial<Expense>) => {
-    setExpenses((prev) =>
-      prev.map((expense) =>
-        expense.id === id ? { ...expense, ...updatedData } : expense
-      )
-    );
-  };
-
-  // Wallet Operations
-  const addWallet = (wallet: Omit<Wallet, 'id'>) => {
-    const newWallet: Wallet = {
-      ...wallet,
-      id: Date.now().toString(),
-    };
-    if (wallet.isPrimary) {
-      setWallets((prev) => prev.map(w => ({ ...w, isPrimary: false })).concat(newWallet));
-    } else {
-      setWallets((prev) => [...prev, newWallet]);
+      setWallets(prev => prev.map(w => w.id === wallet.id ? { ...w, balance: newBalance } : w));
     }
   };
 
-  const updateWallet = (id: string, updatedData: Partial<Wallet>) => {
-    setWallets((prev) => {
-      let next = prev.map((w) => (w.id === id ? { ...w, ...updatedData } : w));
-      if (updatedData.isPrimary) {
-        next = next.map((w) => (w.id === id ? w : { ...w, isPrimary: false }));
-      }
-      return next;
-    });
+  const deleteExpense = async (id: string) => {
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      setExpenses((prev) => prev.filter((expense) => expense.id !== id));
+    }
   };
 
-  const deleteWallet = (id: string) => {
-    setWallets((prev) => {
-      const filtered = prev.filter((w) => w.id !== id);
-      // Ensure at least one primary wallet if we deleted the primary one
-      if (filtered.length > 0 && !filtered.find(w => w.isPrimary)) {
-        filtered[0].isPrimary = true;
-      }
-      return filtered;
-    });
+  const updateExpense = async (id: string, updatedData: Partial<Expense>) => {
+    const { error } = await supabase
+      .from('transactions')
+      .update({
+        title: updatedData.title,
+        category: updatedData.category,
+        amount: updatedData.amount,
+        type: updatedData.type,
+        icon: updatedData.icon,
+        note: updatedData.note,
+      })
+      .eq('id', id);
+
+    if (!error) {
+      setExpenses((prev) =>
+        prev.map((expense) =>
+          expense.id === id ? { ...expense, ...updatedData } : expense
+        )
+      );
+    }
   };
 
-  const setPrimaryWallet = (id: string) => {
-    setWallets((prev) =>
-      prev.map((w) => ({
-        ...w,
-        isPrimary: w.id === id,
-      }))
-    );
+  const addWallet = async (wallet: Omit<Wallet, 'id'>) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('wallets')
+      .insert({
+        user_id: user.id,
+        name: wallet.name,
+        balance: wallet.balance,
+        color: wallet.color,
+        icon: wallet.icon,
+        is_primary: wallet.isPrimary,
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      const newWallet: Wallet = { ...wallet, id: data.id };
+      if (wallet.isPrimary) {
+        setWallets((prev) => prev.map(w => ({ ...w, isPrimary: false })).concat(newWallet));
+      } else {
+        setWallets((prev) => [...prev, newWallet]);
+      }
+    }
+  };
+
+  const updateWallet = async (id: string, updatedData: Partial<Wallet>) => {
+    const { error } = await supabase
+      .from('wallets')
+      .update({
+        name: updatedData.name,
+        balance: updatedData.balance,
+        color: updatedData.color,
+        is_primary: updatedData.isPrimary,
+      })
+      .eq('id', id);
+
+    if (!error) {
+      setWallets((prev) => {
+        let next = prev.map((w) => (w.id === id ? { ...w, ...updatedData } : w));
+        if (updatedData.isPrimary) {
+          next = next.map((w) => (w.id === id ? w : { ...w, isPrimary: false }));
+        }
+        return next;
+      });
+    }
+  };
+
+  const deleteWallet = async (id: string) => {
+    const { error } = await supabase
+      .from('wallets')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      setWallets((prev) => {
+        const filtered = prev.filter((w) => w.id !== id);
+        if (filtered.length > 0 && !filtered.find(w => w.isPrimary)) {
+          filtered[0].isPrimary = true;
+        }
+        return filtered;
+      });
+    }
+  };
+
+  const setPrimaryWallet = async (id: string) => {
+    // Update all wallets in DB (flip is_primary)
+    // Supabase doesn't support batch update with logic easily in one call without a function
+    // So we update the one we want to be primary, and others via application logic or another call
+    
+    const { error } = await supabase
+      .from('wallets')
+      .update({ is_primary: true })
+      .eq('id', id);
+
+    if (!error) {
+      // Clear other primaries in DB
+      await supabase
+        .from('wallets')
+        .update({ is_primary: false })
+        .neq('id', id);
+
+      setWallets((prev) =>
+        prev.map((w) => ({
+          ...w,
+          isPrimary: w.id === id,
+        }))
+      );
+    }
   };
 
   return (
