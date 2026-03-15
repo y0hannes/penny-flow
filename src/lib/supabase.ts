@@ -9,12 +9,36 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase URL or Anon Key is missing. Check your .env file.');
 }
 
+const safeStorage = {
+  getItem: async (key: string) => {
+    try {
+      return await AsyncStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  },
+  setItem: async (key: string, value: string) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      // Fallback or ignore
+    }
+  },
+  removeItem: async (key: string) => {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (e) {
+      // Fallback or ignore
+    }
+  },
+};
+
 export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey,
   {
     auth: {
-      storage: AsyncStorage,
+      storage: safeStorage,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
