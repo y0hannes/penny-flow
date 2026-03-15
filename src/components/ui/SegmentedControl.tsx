@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import Text from './Text';
+import { useTheme } from '@/context/ThemeContext';
 
 interface SegmentedControlProps {
   options: string[];
@@ -10,14 +11,16 @@ interface SegmentedControlProps {
 }
 
 const SegmentedControl = ({ options, selectedOption, onSelect }: SegmentedControlProps) => {
+  const { theme, isDark } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F0F1F5' }]}>
       {options.map((option) => (
         <TouchableOpacity
           key={option}
           style={[
             styles.segment,
-            selectedOption === option && styles.activeSegment,
+            selectedOption === option && [styles.activeSegment, { backgroundColor: isDark ? theme.colors.background : '#FFFFFF' }],
           ]}
           onPress={() => onSelect(option)}
         >
@@ -37,9 +40,8 @@ const SegmentedControl = ({ options, selectedOption, onSelect }: SegmentedContro
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#F0F1F5',
     borderRadius: 12,
-    marginHorizontal: theme.spacing.md,
+    marginHorizontal: staticTheme.spacing.md,
     padding: 4,
   },
   segment: {
@@ -49,7 +51,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeSegment: {
-    backgroundColor: '#FFFFFF',
     // Shadow for selected state
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

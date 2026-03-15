@@ -8,7 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Text,
@@ -21,11 +21,13 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/RootNavigator';
 import { useExpenses } from '@/context/ExpenseContext';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { expenses } = useExpenses();
+  const { expenses, currency, stealthMode } = useExpenses();
+  const { theme, isDark } = useTheme();
 
   // Calculate category totals from expenses
   const categories = useMemo(() => {
@@ -69,10 +71,15 @@ export default function HomeScreen() {
   const balance = totalIncome - totalSpent;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.profileContainer}>
+      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
+        <View
+          style={[
+            styles.profileContainer,
+            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#E0E0E0' },
+          ]}
+        >
           <Image
             source={{ uri: 'https://avatar.iran.liara.run/public/65' }} // Placeholder avatar
             style={styles.avatar}
@@ -81,7 +88,12 @@ export default function HomeScreen() {
         <Text variant="subheading" bold color="textPrimary">
           Penny Flow
         </Text>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity
+          style={[
+            styles.notificationButton,
+            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F5F5F5' },
+          ]}
+        >
           <Ionicons name="notifications" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
       </View>
@@ -95,8 +107,9 @@ export default function HomeScreen() {
           variant="large"
           label="Total Balance"
           amount={balance}
-          comparison={balance >= 0 ? "+$250 from last month" : "-$150 from last month"}
+          comparison={stealthMode ? `•••• from last month` : (balance >= 0 ? `+250 ${currency.symbol} from last month` : `-150 ${currency.symbol} from last month`)}
           amountColor={balance >= 0 ? "success" : "danger"}
+          showStealthToggle={true}
         />
 
         {/* Stats Row */}
@@ -175,21 +188,19 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FBFBFB', // Subtle off-white background from design
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.md,
+    paddingVertical: staticTheme.spacing.sm,
   },
   profileContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#E0E0E0',
   },
   avatar: {
     width: '100%',
@@ -201,28 +212,27 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
   },
   scrollContent: {
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.lg,
+    paddingHorizontal: staticTheme.spacing.md,
+    paddingTop: staticTheme.spacing.lg,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
-    marginTop: theme.spacing.sm,
+    marginBottom: staticTheme.spacing.md,
+    marginTop: staticTheme.spacing.sm,
   },
   categoriesScroll: {
-    paddingBottom: theme.spacing.md,
+    paddingBottom: staticTheme.spacing.md,
   },
   transactionsList: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
 });

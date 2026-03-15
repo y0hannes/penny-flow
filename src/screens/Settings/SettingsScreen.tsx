@@ -4,27 +4,30 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Switch,
   Platform,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import { Text, SettingsItem, SettingsSection } from '@/components/ui';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useExpenses, currencies } from '@/context/ExpenseContext';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const { currency, setCurrency, wallets } = useExpenses();
+  const { theme, isDark, toggleTheme } = useTheme();
 
-  const [budgetAlerts, setBudgetAlerts] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [budget, setBudget] = useState(2500);
+  const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color={theme.colors.textPrimary} />
         </TouchableOpacity>
@@ -39,8 +42,8 @@ export default function SettingsScreen() {
           <SettingsItem
             icon="cash-outline"
             label="Currency"
-            value="USD"
-            onPress={() => { }}
+            value={`${currency.label} (${currency.symbol})`}
+            onPress={() => setIsCurrencyModalVisible(true)}
           />
           <SettingsItem
             icon="globe-outline"
@@ -48,48 +51,21 @@ export default function SettingsScreen() {
             value="English"
             onPress={() => { }}
           />
-        </SettingsSection>
-
-        {/* FINANCIAL SECTION */}
-        <SettingsSection title="Financial">
-          <View style={styles.budgetCard}>
-            <View style={styles.budgetHeader}>
-              <View style={styles.budgetIconContainer}>
-                <Ionicons name="wallet-outline" size={22} color={theme.colors.primary} />
-              </View>
-              <Text style={styles.budgetLabel}>Monthly Budget</Text>
-              <Text style={styles.budgetValue}>${budget.toLocaleString()}</Text>
-            </View>
-
-            <View style={styles.sliderContainer}>
-              <View style={styles.sliderTrack}>
-                <View style={[styles.sliderFill, { width: '25%' }]} />
-                <View style={[styles.sliderThumb, { left: '25%' }]} />
-              </View>
-              <View style={styles.sliderLabels}>
-                <Text variant="caption" color="textTertiary">$0</Text>
-                <Text variant="caption" color="textTertiary">$10,000</Text>
-              </View>
-            </View>
-          </View>
-
           <SettingsItem
-            icon="notifications-outline"
-            label="Budget Alerts"
-            showSwitch
-            switchValue={budgetAlerts}
-            onSwitchChange={setBudgetAlerts}
+            icon="wallet-outline"
+            label="Wallets"
+            value={`${wallets.length} Active`}
+            onPress={() => navigation.navigate('Wallets' as never)}
           />
         </SettingsSection>
-
         {/* APP PREFERENCES SECTION */}
         <SettingsSection title="App Preferences">
           <SettingsItem
             icon="moon-outline"
             label="Dark Mode"
             showSwitch
-            switchValue={darkMode}
-            onSwitchChange={setDarkMode}
+            switchValue={isDark}
+            onSwitchChange={toggleTheme}
           />
           <SettingsItem
             icon="notifications-outline"
@@ -114,6 +90,50 @@ export default function SettingsScreen() {
         </SettingsSection>
       </ScrollView>
 
+      {/* Modal for Currency Selection */}
+      <Modal
+        visible={isCurrencyModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsCurrencyModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: isDark ? '#2C2C2C' : '#F5F5F5' }]}>
+              <Text variant="subheading" bold>Select Currency</Text>
+              <TouchableOpacity onPress={() => setIsCurrencyModalVisible(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={currencies}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.currencyOption, { borderBottomColor: isDark ? '#2C2C2C' : '#F9F9F9' }]}
+                  onPress={() => {
+                    setCurrency(item.code);
+                    setIsCurrencyModalVisible(false);
+                  }}
+                >
+                  <View style={styles.currencyInfo}>
+                    <View style={[styles.currencySymbolCircle, { backgroundColor: isDark ? '#2C2C2C' : '#F5F6F8' }]}>
+                      <Text style={[styles.currencySymbolText, { color: theme.colors.textPrimary }]}>{item.symbol}</Text>
+                    </View>
+                    <Text variant="body" bold={currency.code === item.code}>
+                      {item.label} ({item.code})
+                    </Text>
+                  </View>
+                  {currency.code === item.code && (
+                    <Ionicons name="checkmark-circle" size={24} color={theme.colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+
       {/* Footer / Credits can go here if needed, but not in the image */}
     </View>
   );
@@ -122,103 +142,69 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8F9',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: theme.spacing.md,
-    backgroundColor: '#F7F8F9',
+    paddingVertical: staticTheme.spacing.md,
     position: 'relative',
     minHeight: 56,
   },
   backButton: {
     position: 'absolute',
-    left: theme.spacing.md,
-    padding: theme.spacing.xs,
+    left: staticTheme.spacing.md,
+    padding: staticTheme.spacing.xs,
     zIndex: 1,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: theme.colors.textPrimary,
   },
   scrollContent: {
-    paddingHorizontal: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
-    paddingTop: theme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.md,
+    paddingBottom: staticTheme.spacing.xl,
+    paddingTop: staticTheme.spacing.sm,
   },
-  budgetCard: {
-    padding: theme.spacing.md,
-    backgroundColor: '#FFFFFF',
-  },
-  budgetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  budgetIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: '#E6F9F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: theme.spacing.md,
-  },
-  budgetLabel: {
+  modalOverlay: {
     flex: 1,
-    fontSize: 16,
-    color: '#1A1A1A',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
   },
-  budgetValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: theme.colors.primary,
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '70%',
+    paddingBottom: 40,
   },
-  sliderContainer: {
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-  },
-  sliderTrack: {
-    height: 6,
-    backgroundColor: '#EBEBEB',
-    borderRadius: 3,
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  sliderFill: {
-    height: 6,
-    backgroundColor: theme.colors.primary,
-    borderRadius: 3,
-    position: 'absolute',
-    left: 0,
-  },
-  sliderThumb: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: theme.colors.primary,
-    position: 'absolute',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    // Shadow
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  sliderLabels: {
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: theme.spacing.md,
+    alignItems: 'center',
+    padding: staticTheme.spacing.lg,
+    borderBottomWidth: 1,
+  },
+  currencyOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: staticTheme.spacing.lg,
+    borderBottomWidth: 1,
+  },
+  currencyInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  currencySymbolCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: staticTheme.spacing.md,
+  },
+  currencySymbolText: {
+    fontSize: 18,
+    fontWeight: '700',
   },
 });

@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/RootNavigator';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import {
   Text,
   SegmentedControl,
@@ -20,13 +20,15 @@ import {
   LineChart,
 } from '@/components/ui';
 import { useExpenses } from '@/context/ExpenseContext';
+import { useTheme } from '@/context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export default function InsightsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { expenses } = useExpenses();
+  const { expenses, currency, stealthMode, toggleStealthMode } = useExpenses();
+  const { theme, isDark } = useTheme();
   const [selectedTab, setSelectedTab] = useState('Monthly');
   const [showAllCategories, setShowAllCategories] = useState(false);
 
@@ -121,9 +123,17 @@ export default function InsightsScreen() {
   const trendData = selectedTab === 'Weekly' ? [120, 150, 80, 100, 140, 90, 110] : [150, 180, 120, 220, 190, 242, 210, 280];
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          backgroundColor: theme.colors.background,
+        },
+      ]}
+    >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
         <TouchableOpacity style={styles.iconButton}>
           <Ionicons name="chevron-back" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
@@ -147,9 +157,18 @@ export default function InsightsScreen() {
           <Text variant="caption" color="textSecondary" bold align="center" style={styles.summaryLabel}>
             Total spent this month
           </Text>
-          <Text style={styles.totalAmount}>
-            ${totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </Text>
+          <View style={styles.totalAmountContainer}>
+            <Text style={styles.totalAmount}>
+              {stealthMode ? '••••' : totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency.symbol}
+            </Text>
+            <TouchableOpacity onPress={toggleStealthMode} style={styles.stealthToggle}>
+              <Ionicons 
+                name={stealthMode ? "eye-outline" : "eye-off-outline"} 
+                size={24} 
+                color={theme.colors.textTertiary} 
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.trendContainer}>
             <Ionicons name="trending-up" size={16} color={theme.colors.danger} />
             <Text variant="caption" color="danger" bold style={styles.trendText}>
@@ -164,7 +183,12 @@ export default function InsightsScreen() {
         </View>
 
         {/* Daily Trends Card */}
-        <View style={styles.trendsCard}>
+        <View
+          style={[
+            styles.trendsCard,
+            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#FFFFFF' },
+          ]}
+        >
           <View style={styles.cardHeader}>
             <View>
               <Text variant="body" bold color="textPrimary">Daily Trends</Text>
@@ -180,7 +204,7 @@ export default function InsightsScreen() {
             <LineChart data={trendData} />
             {/* Tooltip mockup */}
             <View style={styles.tooltip}>
-              <Text style={styles.tooltipText}>$242.00</Text>
+              <Text style={styles.tooltipText}>{stealthMode ? '••••' : '242.00'} {currency.symbol}</Text>
             </View>
           </View>
         </View>
@@ -196,7 +220,7 @@ export default function InsightsScreen() {
         <View style={styles.categoryList}>
           {categoriesStats.slice(0, 3).map((item, index) => (
             <View key={index} style={styles.categoryItem}>
-              <View style={[styles.categoryIcon, { backgroundColor: `${item.color}15` }]}>
+              <View style={[styles.categoryIcon, { backgroundColor: isDark ? `${item.color}33` : `${item.color}15` }]}>
                 <Ionicons name={item.icon as any} size={20} color={item.color} />
               </View>
               <View style={styles.categoryContent}>
@@ -205,14 +229,14 @@ export default function InsightsScreen() {
                     <Text variant="body" bold color="textPrimary">{item.label}</Text>
                     <Text variant="caption" color="textTertiary">{item.count} Transactions</Text>
                   </View>
-                  <View style={styles.categoryAmountInfo}>
-                    <Text variant="body" bold color="textPrimary">
-                      ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </Text>
-                    <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
-                  </View>
+                    <View style={styles.categoryAmountInfo}>
+                      <Text variant="body" bold color="textPrimary">
+                        {stealthMode ? '••••' : item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {currency.symbol}
+                      </Text>
+                      <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
+                    </View>
                 </View>
-                <View style={styles.progressTrack}>
+                <View style={[styles.progressTrack, { backgroundColor: isDark ? '#2C2C2C' : '#F0F0F0' }]}>
                   <View style={[styles.progressBar, { width: `${item.percentage}%`, backgroundColor: item.color }]} />
                 </View>
               </View>
@@ -230,14 +254,13 @@ export default function InsightsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FBFBFB',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: staticTheme.spacing.md,
+    paddingVertical: staticTheme.spacing.sm,
   },
   iconButton: {
     width: 40,
@@ -247,21 +270,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContent: {
-    paddingTop: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
+    paddingTop: staticTheme.spacing.md,
+    paddingHorizontal: staticTheme.spacing.md,
   },
   summarySection: {
     alignItems: 'center',
-    marginTop: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
+    marginTop: staticTheme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
   summaryLabel: {
     marginBottom: 4,
   },
   totalAmount: {
     fontSize: 42,
-    fontFamily: theme.fonts.bold,
-    color: theme.colors.textPrimary,
+    fontFamily: staticTheme.fonts.bold,
+  },
+  totalAmountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stealthToggle: {
+    marginLeft: 10,
+    padding: 4,
   },
   trendContainer: {
     flexDirection: 'row',
@@ -272,14 +303,13 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   chartContainer: {
-    marginVertical: theme.spacing.xl,
+    marginVertical: staticTheme.spacing.xl,
   },
   trendsCard: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: theme.spacing.md,
+    marginHorizontal: staticTheme.spacing.md,
     borderRadius: 24,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.xl,
+    padding: staticTheme.spacing.lg,
+    marginBottom: staticTheme.spacing.xl,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -296,7 +326,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
   detailsButton: {
     flexDirection: 'row',
@@ -318,22 +348,22 @@ const styles = StyleSheet.create({
   tooltipText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontFamily: theme.fonts.medium,
+    fontFamily: staticTheme.fonts.medium,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    paddingHorizontal: staticTheme.spacing.md,
+    marginBottom: staticTheme.spacing.md,
   },
   categoryList: {
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: staticTheme.spacing.md,
   },
   categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: staticTheme.spacing.lg,
   },
   categoryIcon: {
     width: 44,
@@ -341,7 +371,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: staticTheme.spacing.md,
   },
   categoryContent: {
     flex: 1,
@@ -358,7 +388,6 @@ const styles = StyleSheet.create({
   progressTrack: {
     height: 6,
     width: '100%',
-    backgroundColor: '#F0F0F0',
     borderRadius: 3,
     overflow: 'hidden',
   },

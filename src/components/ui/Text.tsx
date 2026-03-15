@@ -5,7 +5,7 @@ import {
   TextStyle,
 } from 'react-native';
 import { TextVariant, TextColorVariant } from '@/types/ui-variants';
-import { theme } from '@/theme';
+import { useTheme } from '@/context/ThemeContext';
 
 interface TextProps extends NativeTextProps {
   variant?: TextVariant;
@@ -24,8 +24,10 @@ const Text = ({
   children,
   ...props
 }: TextProps) => {
+  const { theme } = useTheme();
+
   const baseStyle: TextStyle = {
-    color: theme.colors.primary,
+    color: theme.colors.textPrimary,
     fontFamily: theme.fonts.regular,
   };
   const variantStyles: Record<TextVariant, TextStyle> = {

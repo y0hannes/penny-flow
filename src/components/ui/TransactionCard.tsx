@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/theme';
+import { theme as staticTheme } from '@/theme';
 import Text from './Text';
 import { TransactionType } from '@/types/ui-variants';
+import { useExpenses } from '@/context/ExpenseContext';
+import { useTheme } from '@/context/ThemeContext';
 
 interface TransactionCardProps {
   title: string;
@@ -24,6 +26,8 @@ const TransactionCard = ({
   icon,
   onPress,
 }: TransactionCardProps) => {
+  const { currency, stealthMode } = useExpenses();
+  const { theme, isDark } = useTheme();
   const isExpense = type === 'expense';
   const amountPrefix = isExpense ? '-' : '+';
   const amountColor = isExpense ? 'textPrimary' : 'success';
@@ -32,10 +36,10 @@ const TransactionCard = ({
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={onPress}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.colors.background, borderBottomColor: isDark ? '#2C2C2C' : '#F5F5F5' }]}
     >
       <View style={styles.iconContainer}>
-        <View style={styles.iconCircle}>
+        <View style={[styles.iconCircle, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
           <Ionicons name={icon} size={24} color={theme.colors.textPrimary} />
         </View>
       </View>
@@ -46,7 +50,7 @@ const TransactionCard = ({
             {title}
           </Text>
           <Text variant="body" bold color={amountColor}>
-            {amountPrefix}${amount.toFixed(2)}
+            {amountPrefix}{stealthMode ? '••••' : amount.toFixed(2)} {currency.symbol}
           </Text>
         </View>
 
@@ -67,23 +71,19 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.medium,
-    marginBottom: theme.spacing.sm,
-    // Add subtle border similar to design
+    paddingVertical: staticTheme.spacing.md,
+    paddingHorizontal: staticTheme.spacing.md,
+    borderRadius: staticTheme.borderRadius.medium,
+    marginBottom: staticTheme.spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
   },
   iconContainer: {
-    marginRight: theme.spacing.md,
+    marginRight: staticTheme.spacing.md,
   },
   iconCircle: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#F7F8F9',
     alignItems: 'center',
     justifyContent: 'center',
   },
