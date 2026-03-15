@@ -26,7 +26,7 @@ const TransactionCard = ({
   icon,
   onPress,
 }: TransactionCardProps) => {
-  const { currency } = useExpenses();
+  const { currency, stealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
   const isExpense = type === 'expense';
   const amountPrefix = isExpense ? '-' : '+';
@@ -50,7 +50,7 @@ const TransactionCard = ({
             {title}
           </Text>
           <Text variant="body" bold color={amountColor}>
-            {amountPrefix}{currency.symbol}{amount.toFixed(2)}
+            {amountPrefix}{stealthMode ? '••••' : amount.toFixed(2)} {currency.symbol}
           </Text>
         </View>
 

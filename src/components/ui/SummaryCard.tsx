@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { theme as staticTheme } from '@/theme';
 import Text from './Text';
 import { TextColorVariant } from '@/types/ui-variants';
@@ -13,6 +14,7 @@ interface SummaryCardProps {
   progress?: number; // 0 to 1
   comparison?: string;
   amountColor?: TextColorVariant;
+  showStealthToggle?: boolean;
 }
 
 const { width } = Dimensions.get('window');
@@ -25,8 +27,9 @@ const SummaryCard = ({
   progress,
   comparison,
   amountColor,
+  showStealthToggle = false,
 }: SummaryCardProps) => {
-  const { currency } = useExpenses();
+  const { currency, stealthMode, toggleStealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
   const isLarge = variant === 'large';
 
@@ -51,14 +54,28 @@ const SummaryCard = ({
         {label}
       </Text>
 
-      <Text
-        variant={isLarge ? 'heading' : 'subheading'}
-        color={resolvedAmountColor}
-        align="center"
-        style={isLarge ? styles.largeAmount : styles.smallAmount}
-      >
-        {currency.symbol}{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-      </Text>
+      <View style={styles.amountContainer}>
+        <Text
+          variant={isLarge ? 'heading' : 'subheading'}
+          color={resolvedAmountColor}
+          align="center"
+          style={isLarge ? styles.largeAmount : styles.smallAmount}
+        >
+          {stealthMode ? '••••' : amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency.symbol}
+        </Text>
+        {showStealthToggle && (
+          <TouchableOpacity 
+            onPress={toggleStealthMode} 
+            style={[styles.stealthToggle, isLarge ? styles.largeStealthToggle : styles.smallStealthToggle]}
+          >
+            <Ionicons 
+              name={stealthMode ? "eye-outline" : "eye-off-outline"} 
+              size={isLarge ? 24 : 18} 
+              color={theme.colors.textTertiary} 
+            />
+          </TouchableOpacity>
+        )}
+      </View>
 
       {comparison && (
         <View style={[
@@ -117,7 +134,21 @@ const styles = StyleSheet.create({
   },
   smallAmount: {
     fontSize: 24,
-    marginBottom: staticTheme.spacing.sm,
+  },
+  amountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stealthToggle: {
+    marginLeft: 8,
+    padding: 4,
+  },
+  largeStealthToggle: {
+    marginTop: 4,
+  },
+  smallStealthToggle: {
+    marginTop: 0,
   },
   comparisonContainer: {
     paddingHorizontal: staticTheme.spacing.sm,

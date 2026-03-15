@@ -22,6 +22,8 @@ interface ExpenseContextType {
   deleteWallet: (id: string) => void;
   setPrimaryWallet: (id: string) => void;
   primaryWallet: Wallet | undefined;
+  stealthMode: boolean;
+  toggleStealthMode: () => void;
 }
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
@@ -32,8 +34,11 @@ const initialExpenses: Expense[] = [];
 
 export function ExpenseProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  const [currency, setCurrencyState] = useState<Currency>(currencies[1]); // Default to USD
+  const [currency, setCurrencyState] = useState<Currency>(currencies[0]); // Default to Birr (ETB)
   const [wallets, setWallets] = useState<Wallet[]>(initialWallets);
+  const [stealthMode, setStealthMode] = useState(false);
+
+  const toggleStealthMode = () => setStealthMode(prev => !prev);
 
   const primaryWallet = wallets.find(w => w.isPrimary) || wallets[0];
 
@@ -67,14 +72,41 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
       .order('created_at', { ascending: true });
 
     if (!walletError && walletData) {
-      setWallets(walletData.map(w => ({
-        id: w.id,
-        name: w.name,
-        balance: parseFloat(w.balance),
-        color: w.color,
-        icon: w.icon,
-        isPrimary: w.is_primary,
-      })));
+      if (walletData.length === 0) {
+        // Create a default wallet for new users
+        const { data: defaultWallet, error: createError } = await supabase
+          .from('wallets')
+          .insert({
+            user_id: user.id,
+            name: 'Main Wallet',
+            balance: 0,
+            color: '#00D09C',
+            icon: 'wallet',
+            is_primary: true,
+          })
+          .select()
+          .single();
+
+        if (!createError && defaultWallet) {
+          setWallets([{
+            id: defaultWallet.id,
+            name: defaultWallet.name,
+            balance: parseFloat(defaultWallet.balance),
+            color: defaultWallet.color,
+            icon: defaultWallet.icon,
+            isPrimary: defaultWallet.is_primary,
+          }]);
+        }
+      } else {
+        setWallets(walletData.map(w => ({
+          id: w.id,
+          name: w.name,
+          balance: parseFloat(w.balance),
+          color: w.color,
+          icon: w.icon,
+          isPrimary: w.is_primary,
+        })));
+      }
     }
 
     // Fetch Transactions
@@ -288,6 +320,8 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         deleteWallet,
         setPrimaryWallet,
         primaryWallet,
+        stealthMode,
+        toggleStealthMode,
       }}
     >
       {children}

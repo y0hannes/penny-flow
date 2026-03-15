@@ -17,7 +17,7 @@ import { useTheme } from '@/context/ThemeContext';
 export default function AllCategoriesScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { expenses, currency } = useExpenses();
+  const { expenses, currency, stealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
 
   const parseDate = (dateStr: string) => {
@@ -109,12 +109,12 @@ export default function AllCategoriesScreen() {
                     <Text variant="body" bold color="textPrimary">{item.label}</Text>
                     <Text variant="caption" color="textTertiary">{item.count} Transactions</Text>
                   </View>
-                  <View style={styles.categoryAmountInfo}>
-                    <Text variant="body" bold color="textPrimary">
-                      {currency.symbol}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </Text>
-                    <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
-                  </View>
+                    <View style={styles.categoryAmountInfo}>
+                      <Text variant="body" bold color="textPrimary">
+                        {stealthMode ? '••••' : item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {currency.symbol}
+                      </Text>
+                      <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
+                    </View>
                 </View>
                 <View style={[styles.progressTrack, { backgroundColor: isDark ? '#2C2C2C' : '#F0F0F0' }]}>
                   <View style={[styles.progressBar, { width: `${item.percentage}%`, backgroundColor: item.color }]} />

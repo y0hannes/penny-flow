@@ -21,7 +21,7 @@ import { Wallet } from '@/types/expense';
 export default function WalletsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { wallets, addWallet, updateWallet, deleteWallet, setPrimaryWallet, currency } = useExpenses();
+  const { wallets, addWallet, updateWallet, deleteWallet, setPrimaryWallet, currency, stealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -126,7 +126,7 @@ export default function WalletsScreen() {
                 )}
               </View>
               <Text variant="subheading" bold color="textPrimary">
-                {currency.symbol}{wallet.balance.toLocaleString()}
+                {stealthMode ? '••••' : wallet.balance.toLocaleString()} {currency.symbol}
               </Text>
             </View>
 

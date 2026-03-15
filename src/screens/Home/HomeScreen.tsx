@@ -26,7 +26,7 @@ import { useTheme } from '@/context/ThemeContext';
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { expenses, currency } = useExpenses();
+  const { expenses, currency, stealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
 
   // Calculate category totals from expenses
@@ -107,8 +107,9 @@ export default function HomeScreen() {
           variant="large"
           label="Total Balance"
           amount={balance}
-          comparison={balance >= 0 ? `+${currency.symbol}250 from last month` : `-${currency.symbol}150 from last month`}
+          comparison={stealthMode ? `•••• from last month` : (balance >= 0 ? `+250 ${currency.symbol} from last month` : `-150 ${currency.symbol} from last month`)}
           amountColor={balance >= 0 ? "success" : "danger"}
+          showStealthToggle={true}
         />
 
         {/* Stats Row */}

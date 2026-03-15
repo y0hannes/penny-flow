@@ -27,7 +27,7 @@ const { width } = Dimensions.get('window');
 export default function InsightsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { expenses, currency } = useExpenses();
+  const { expenses, currency, stealthMode, toggleStealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
   const [selectedTab, setSelectedTab] = useState('Monthly');
   const [showAllCategories, setShowAllCategories] = useState(false);
@@ -157,9 +157,18 @@ export default function InsightsScreen() {
           <Text variant="caption" color="textSecondary" bold align="center" style={styles.summaryLabel}>
             Total spent this month
           </Text>
-          <Text style={styles.totalAmount}>
-            {currency.symbol}{totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </Text>
+          <View style={styles.totalAmountContainer}>
+            <Text style={styles.totalAmount}>
+              {stealthMode ? '••••' : totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency.symbol}
+            </Text>
+            <TouchableOpacity onPress={toggleStealthMode} style={styles.stealthToggle}>
+              <Ionicons 
+                name={stealthMode ? "eye-outline" : "eye-off-outline"} 
+                size={24} 
+                color={theme.colors.textTertiary} 
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.trendContainer}>
             <Ionicons name="trending-up" size={16} color={theme.colors.danger} />
             <Text variant="caption" color="danger" bold style={styles.trendText}>
@@ -195,7 +204,7 @@ export default function InsightsScreen() {
             <LineChart data={trendData} />
             {/* Tooltip mockup */}
             <View style={styles.tooltip}>
-              <Text style={styles.tooltipText}>{currency.symbol}242.00</Text>
+              <Text style={styles.tooltipText}>{stealthMode ? '••••' : '242.00'} {currency.symbol}</Text>
             </View>
           </View>
         </View>
@@ -220,12 +229,12 @@ export default function InsightsScreen() {
                     <Text variant="body" bold color="textPrimary">{item.label}</Text>
                     <Text variant="caption" color="textTertiary">{item.count} Transactions</Text>
                   </View>
-                  <View style={styles.categoryAmountInfo}>
-                    <Text variant="body" bold color="textPrimary">
-                      {currency.symbol}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </Text>
-                    <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
-                  </View>
+                    <View style={styles.categoryAmountInfo}>
+                      <Text variant="body" bold color="textPrimary">
+                        {stealthMode ? '••••' : item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {currency.symbol}
+                      </Text>
+                      <Text variant="caption" color="textTertiary" align="right">{Math.round(item.percentage)}%</Text>
+                    </View>
                 </View>
                 <View style={[styles.progressTrack, { backgroundColor: isDark ? '#2C2C2C' : '#F0F0F0' }]}>
                   <View style={[styles.progressBar, { width: `${item.percentage}%`, backgroundColor: item.color }]} />
@@ -275,6 +284,15 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 42,
     fontFamily: staticTheme.fonts.bold,
+  },
+  totalAmountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stealthToggle: {
+    marginLeft: 10,
+    padding: 4,
   },
   trendContainer: {
     flexDirection: 'row',

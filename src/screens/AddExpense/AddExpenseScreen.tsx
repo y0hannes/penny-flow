@@ -49,7 +49,7 @@ const incomeCategories = [
 export default function AddExpenseScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { addExpense, currency, wallets, primaryWallet } = useExpenses();
+  const { addExpense, currency, wallets, primaryWallet, stealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
 
   const [type, setType] = useState<'expense' | 'income'>('expense');
@@ -122,7 +122,6 @@ export default function AddExpenseScreen() {
           <View style={styles.amountContainer}>
             <Text variant="caption" color="textTertiary" bold align="center" style={styles.amountLabel}>AMOUNT</Text>
             <View style={styles.amountRow}>
-              <Text style={[styles.currencySymbol, { color: theme.colors.textPrimary }]}>{currency.symbol}</Text>
               <TextInput
                 value={amount}
                 onChangeText={setAmount}
@@ -134,7 +133,9 @@ export default function AddExpenseScreen() {
                 returnKeyType="next"
                 onSubmitEditing={() => noteInputRef.current?.focus()}
                 blurOnSubmit={false}
+                secureTextEntry={stealthMode}
               />
+              <Text style={[styles.currencySymbol, { color: theme.colors.textPrimary }]}>{currency.symbol}</Text>
             </View>
           </View>
           <View style={styles.sectionHeader}>
@@ -256,7 +257,7 @@ export default function AddExpenseScreen() {
                     </View>
                     <View>
                       <Text variant="body" bold={selectedWallet?.id === item.id}>{item.name}</Text>
-                      <Text variant="caption" color="textTertiary">{currency.symbol}{item.balance.toLocaleString()}</Text>
+                      <Text variant="caption" color="textTertiary">{item.balance.toLocaleString()} {currency.symbol}</Text>
                     </View>
                   </View>
                   {selectedWallet?.id === item.id && (

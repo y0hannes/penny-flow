@@ -27,7 +27,7 @@ const CategoryCard = ({
   variant = 'horizontal',
 }: CategoryCardProps) => {
   const { theme, isDark } = useTheme();
-  const { currency } = useExpenses();
+  const { currency, stealthMode } = useExpenses();
   const isGrid = variant === 'grid';
 
   return (
@@ -79,7 +79,7 @@ const CategoryCard = ({
 
       {amount !== undefined && (
         <Text variant="caption" color="textTertiary">
-          {currency.symbol}{amount.toFixed(2)}
+          {stealthMode ? '••••' : amount.toFixed(2)} {currency.symbol}
         </Text>
       )}
     </TouchableOpacity>

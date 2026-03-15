@@ -13,7 +13,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { theme, isDark } = useTheme();
-  const { wallets } = useExpenses();
+  const { wallets, currency, stealthMode, toggleStealthMode } = useExpenses();
   const { user, signOut } = useAuth();
 
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
@@ -41,9 +41,18 @@ export default function ProfileScreen() {
         {/* Wealth Summary */}
         <View style={[styles.wealthCard, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
           <Text variant="caption" color="textTertiary" bold>TOTAL WEALTH</Text>
-          <Text style={[styles.totalAmount, { color: theme.colors.textPrimary }]}>
-            ${totalBalance.toLocaleString()}
-          </Text>
+          <View style={styles.amountContainer}>
+            <Text style={[styles.totalAmount, { color: theme.colors.textPrimary }]}>
+              {stealthMode ? '••••' : totalBalance.toLocaleString()} {currency.symbol}
+            </Text>
+            <TouchableOpacity onPress={toggleStealthMode} style={styles.stealthToggle}>
+              <Ionicons 
+                name={stealthMode ? "eye-outline" : "eye-off-outline"} 
+                size={20} 
+                color={theme.colors.textTertiary} 
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.walletCount}>
             <Ionicons name="wallet-outline" size={14} color={theme.colors.primary} />
             <Text variant="caption" color="primary" bold style={{ marginLeft: 4 }}>
@@ -141,7 +150,15 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 32,
     fontWeight: 'bold',
+  },
+  amountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginVertical: 8,
+  },
+  stealthToggle: {
+    marginLeft: 10,
+    padding: 4,
   },
   walletCount: {
     flexDirection: 'row',
