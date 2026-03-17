@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useExpenses, currencies } from '@/context/ExpenseContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -15,10 +16,17 @@ export default function ProfileScreen() {
   const { theme, isDark, toggleTheme } = useTheme();
   const { wallets, currency, stealthMode, toggleStealthMode, setCurrency } = useExpenses();
   const { user, signOut } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
 
   const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
+  const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
 
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
+
+  const languageOptions = [
+    { code: 'en', label: 'English' },
+    { code: 'am', label: 'አማርኛ' },
+  ];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.colors.background }]}>
@@ -42,7 +50,7 @@ export default function ProfileScreen() {
 
         {/* Wealth Summary */}
         <View style={[styles.wealthCard, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
-          <Text variant="caption" color="textTertiary" bold>TOTAL WEALTH</Text>
+          <Text variant="caption" color="textTertiary" bold>{t('totalWealth')}</Text>
           <View style={styles.amountContainer}>
             <Text style={[styles.totalAmount, { color: theme.colors.textPrimary }]}>
               {stealthMode ? '••••' : totalBalance.toLocaleString()} {currency.symbol}
@@ -58,7 +66,7 @@ export default function ProfileScreen() {
           <View style={styles.walletCount}>
             <Ionicons name="wallet-outline" size={14} color={theme.colors.primary} />
             <Text variant="caption" color="primary" bold style={{ marginLeft: 4 }}>
-              {wallets.length} Wallets Active
+              {wallets.length} {t('walletsActive')}
             </Text>
           </View>
         </View>
@@ -66,66 +74,72 @@ export default function ProfileScreen() {
         {/* Combined Menu Items */}
         <View style={styles.menuContainer}>
           
-          <SettingsSection title="My Finances">
+          <SettingsSection title={t('myFinances')}>
             <SettingsItem
               icon="wallet-outline"
-              label="Manage Wallets"
-              value={`${wallets.length} Active`}
+              label={t('manageWallets')}
+              value={`${wallets.length} ${t('active')}`}
               onPress={() => navigation.navigate('Wallets' as never)}
             />
             <SettingsItem
               icon="card-outline"
-              label="Payment Methods"
+              label={t('paymentMethods')}
               onPress={() => {}}
             />
             <SettingsItem
               icon="analytics-outline"
-              label="Financial Reports"
+              label={t('financialReports')}
               onPress={() => {}}
             />
           </SettingsSection>
 
-          <SettingsSection title="App Settings">
+          <SettingsSection title={t('appSettings')}>
             <SettingsItem
               icon="cash-outline"
-              label="Currency"
+              label={t('currency')}
               value={`${currency.label} (${currency.symbol})`}
               onPress={() => setIsCurrencyModalVisible(true)}
             />
             <SettingsItem
+              icon="globe-outline"
+              label={t('language')}
+              value={languageOptions.find(o => o.code === language)?.label || 'English'}
+              onPress={() => setIsLanguageModalVisible(true)}
+            />
+            <SettingsItem
               icon="moon-outline"
-              label="Dark Mode"
+              label={t('darkMode')}
               showSwitch
               switchValue={isDark}
               onSwitchChange={toggleTheme}
             />
              <SettingsItem
               icon="notifications-outline"
-              label="Push Notifications"
+              label={t('pushNotifications')}
               onPress={() => { }}
             />
           </SettingsSection>
 
-          <SettingsSection title="Account">
+          <SettingsSection title={t('account')}>
             <SettingsItem
               icon="person-outline"
-              label="Personal Information"
+              label={t('personalInformation')}
               onPress={() => {}}
             />
             <SettingsItem
               icon="help-circle-outline"
-              label="Help Center"
+              label={t('helpCenter')}
               onPress={() => { }}
             />
             <SettingsItem
               icon="shield-checkmark-outline"
-              label="Privacy Policy"
+              label={t('privacyPolicy')}
               rightIcon="open-outline"
               onPress={() => { }}
             />
             <SettingsItem
               icon="log-out-outline"
-              label="Logout"
+              label={t('logout')}
               destructive
               onPress={signOut}
             />
@@ -133,7 +147,7 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
-      {/* Modal for Currency Selection (Copied from SettingsScreen) */}
+      {/* Modal for Currency Selection */}
       <Modal
         visible={isCurrencyModalVisible}
         transparent={true}
@@ -143,7 +157,7 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
             <View style={[styles.modalHeader, { borderBottomColor: isDark ? '#2C2C2C' : '#F5F5F5' }]}>
-              <Text variant="subheading" bold>Select Currency</Text>
+              <Text variant="subheading" bold>{t('selectCurrency')}</Text>
               <TouchableOpacity onPress={() => setIsCurrencyModalVisible(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
               </TouchableOpacity>
@@ -168,6 +182,47 @@ export default function ProfileScreen() {
                     </Text>
                   </View>
                   {currency.code === item.code && (
+                    <Ionicons name="checkmark-circle" size={24} color={theme.colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal for Language Selection */}
+      <Modal
+        visible={isLanguageModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsLanguageModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: isDark ? '#2C2C2C' : '#F5F5F5' }]}>
+              <Text variant="subheading" bold>{t('selectLanguage')}</Text>
+              <TouchableOpacity onPress={() => setIsLanguageModalVisible(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={languageOptions}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.currencyOption, { borderBottomColor: isDark ? '#2C2C2C' : '#F9F9F9' }]}
+                  onPress={() => {
+                    setLanguage(item.code as any);
+                    setIsLanguageModalVisible(false);
+                  }}
+                >
+                  <View style={styles.currencyInfo}>
+                    <Text variant="body" bold={language === item.code}>
+                      {item.label}
+                    </Text>
+                  </View>
+                  {language === item.code && (
                     <Ionicons name="checkmark-circle" size={24} color={theme.colors.primary} />
                   )}
                 </TouchableOpacity>
