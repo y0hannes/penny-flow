@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, ScrollView, Modal, FlatList } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, ScrollView, Modal, FlatList, TextInput, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme as staticTheme } from '@/theme';
 import { Text, SettingsItem, SettingsSection } from '@/components/ui';
@@ -15,11 +15,14 @@ export default function ProfileScreen() {
   const navigation = useNavigation();
   const { theme, isDark, toggleTheme } = useTheme();
   const { wallets, currency, stealthMode, toggleStealthMode, setCurrency } = useExpenses();
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
 
   const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
   const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
+  const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+  const [editName, setEditName] = useState(user?.user_metadata?.full_name || '');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
 
@@ -27,6 +30,27 @@ export default function ProfileScreen() {
     { code: 'en', label: 'English' },
     { code: 'am', label: 'አማርኛ' },
   ];
+
+  const handleUpdateProfile = async () => {
+    if (!editName.trim()) {
+      return;
+    }
+    setIsUpdatingProfile(true);
+    const { error } = await updateProfile({ full_name: editName });
+    setIsUpdatingProfile(false);
+
+    if (error) {
+      Alert.alert(t('error'), t('errorUpdatingProfile') + ': ' + error.message);
+    } else {
+      Alert.alert(t('success'), t('profileUpdated'));
+      setIsProfileModalVisible(false);
+    }
+  };
+
+  const handleOpenProfileModal = () => {
+    setEditName(user?.user_metadata?.full_name || '');
+    setIsProfileModalVisible(true);
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.colors.background }]}>
@@ -124,7 +148,7 @@ export default function ProfileScreen() {
             <SettingsItem
               icon="person-outline"
               label={t('personalInformation')}
-              onPress={() => {}}
+              onPress={handleOpenProfileModal}
             />
             <SettingsItem
               icon="help-circle-outline"
@@ -228,6 +252,51 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               )}
             />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal for Personal Information */}
+      <Modal
+        visible={isProfileModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsProfileModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: isDark ? '#2C2C2C' : '#F5F5F5' }]}>
+              <Text variant="subheading" bold>{t('personalInformation')}</Text>
+              <TouchableOpacity onPress={() => setIsProfileModalVisible(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <Text variant="caption" color="textTertiary" bold style={styles.inputLabel}>{t('email')}</Text>
+              <TextInput
+                value={user?.email || ''}
+                editable={false}
+                style={[styles.input, { color: theme.colors.textTertiary, borderBottomColor: isDark ? '#2C2C2C' : '#EBEBEB' }]}
+              />
+
+              <Text variant="caption" color="textTertiary" bold style={[styles.inputLabel, { marginTop: 20 }]}>{t('fullName')}</Text>
+              <TextInput
+                value={editName}
+                onChangeText={setEditName}
+                placeholder={t('fullName')}
+                placeholderTextColor={theme.colors.textTertiary}
+                style={[styles.input, { color: theme.colors.textPrimary, borderBottomColor: isDark ? '#2C2C2C' : '#EBEBEB' }]}
+              />
+
+              <TouchableOpacity
+                onPress={handleUpdateProfile}
+                disabled={isUpdatingProfile}
+                style={[styles.saveButton, { backgroundColor: theme.colors.primary, opacity: isUpdatingProfile ? 0.7 : 1 }]}
+              >
+                <Text variant="button" bold>{isUpdatingProfile ? '...' : t('updateProfile')}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -348,5 +417,25 @@ const styles = StyleSheet.create({
   currencySymbolText: {
     fontSize: 18,
     fontWeight: '700',
+  },
+  modalBody: {
+    padding: staticTheme.spacing.lg,
+  },
+  inputLabel: {
+    letterSpacing: 1,
+    fontSize: 10,
+  },
+  input: {
+    fontSize: 18,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    marginBottom: 10,
+  },
+  saveButton: {
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 30,
   },
 });
