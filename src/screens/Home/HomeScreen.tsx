@@ -22,12 +22,14 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/RootNavigator';
 import { useExpenses } from '@/context/ExpenseContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { expenses, currency, stealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
+  const { t } = useLanguage();
 
   // Calculate category totals from expenses
   const categories = useMemo(() => {
@@ -105,9 +107,9 @@ export default function HomeScreen() {
         {/* Main Summary */}
         <SummaryCard
           variant="large"
-          label="Total Balance"
+          label={t('totalBalance')}
           amount={balance}
-          comparison={stealthMode ? `•••• from last month` : (balance >= 0 ? `+250 ${currency.symbol} from last month` : `-150 ${currency.symbol} from last month`)}
+          comparison={stealthMode ? `•••• ${t('fromLastMonth')}` : (balance >= 0 ? `+250 ${currency.symbol} ${t('fromLastMonth')}` : `-150 ${currency.symbol} ${t('fromLastMonth')}`)}
           amountColor={balance >= 0 ? "success" : "danger"}
           showStealthToggle={true}
         />
@@ -115,13 +117,13 @@ export default function HomeScreen() {
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <SummaryCard
-            label="Income"
+            label={t('income')}
             amount={totalIncome}
             progress={1}
             amountColor="success"
           />
           <SummaryCard
-            label="Expenses"
+            label={t('expenses')}
             amount={totalSpent}
             progress={totalSpent / (totalIncome || 1)}
             amountColor="danger"
@@ -131,11 +133,11 @@ export default function HomeScreen() {
         {/* Categories Section */}
         <View style={styles.sectionHeader}>
           <Text variant="subheading" bold color="textPrimary">
-            Categories
+            {t('categories')}
           </Text>
           <TouchableOpacity>
             <Text variant="link" color="primary">
-              See All
+              {t('seeAll')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -158,7 +160,7 @@ export default function HomeScreen() {
         {/* Transactions Section */}
         <View style={styles.sectionHeader}>
           <Text variant="subheading" bold color="textPrimary">
-            Recent Transactions
+            {t('recentTransactions')}
           </Text>
         </View>
 

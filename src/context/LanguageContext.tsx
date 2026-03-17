@@ -15,6 +15,8 @@ export const translations: Translations = {
     cancel: 'Cancel',
     save: 'Save',
     active: 'Active',
+    delete: 'Delete',
+    error: 'Error',
     
     // Bottom Tab
     home: 'Home',
@@ -41,16 +43,49 @@ export const translations: Translations = {
     totalWealth: 'TOTAL WEALTH',
     walletsActive: 'Wallets Active',
 
-    // Home Screen (examples)
+    // Home Screen
     totalBalance: 'Total Balance',
+    fromLastMonth: 'from last month',
+    income: 'Income',
+    expenses: 'Expenses',
+    categories: 'Categories',
+    seeAll: 'See All',
     recentTransactions: 'Recent Transactions',
     viewAll: 'View All',
+
+    // Insights Screen
+    weekly: 'Weekly',
+    monthly: 'Monthly',
+    yearly: 'Yearly',
+    totalSpentThisMonth: 'Total spent this month',
+    vsLastMonth: 'vs last month',
+    dailyTrends: 'Daily Trends',
+    details: 'Details',
+    topCategories: 'Top Categories',
+    transactions: 'Transactions',
+
+    // Wallets Screen
+    yourWallets: 'YOUR WALLETS',
+    primary: 'PRIMARY',
+    editWallet: 'Edit Wallet',
+    newWallet: 'New Wallet',
+    walletName: 'WALLET NAME',
+    initialBalance: 'INITIAL BALANCE',
+    themeColor: 'THEME COLOR',
+    saveWallet: 'Save Wallet',
+    pleaseEnterWalletName: 'Please enter a wallet name',
+    cannotDelete: 'Cannot Delete',
+    cannotDeletePrimary: 'You cannot delete the primary wallet. Set another wallet as primary first.',
+    deleteWallet: 'Delete Wallet',
+    deleteWalletWarning: 'Are you sure you want to delete this wallet? All history associated with this wallet name will remain but the wallet itself will be removed.',
   },
   am: {
     // Shared
     cancel: 'ሰርዝ',
     save: 'አስቀምጥ',
     active: 'ገባሪ',
+    delete: 'መሰረዝ',
+    error: 'ስህተት',
     
     // Bottom Tab
     home: 'መነሻ',
@@ -77,10 +112,41 @@ export const translations: Translations = {
     totalWealth: 'ጠቅላላ ሀብት',
     walletsActive: 'ገባሪ ቦርሳዎች',
 
-    // Home Screen (examples)
+    // Home Screen
     totalBalance: 'ጠቅላላ ቀሪ ሂሳብ',
+    fromLastMonth: 'ካለፈው ወር',
+    income: 'ገቢ',
+    expenses: 'ወጪዎች',
+    categories: 'ምድቦች',
+    seeAll: 'ሁሉንም ይመልከቱ',
     recentTransactions: 'የቅርብ ጊዜ ግብይቶች',
     viewAll: 'ሁሉንም ይመልከቱ',
+
+    // Insights Screen
+    weekly: 'ሳምንታዊ',
+    monthly: 'ወርሃዊ',
+    yearly: 'አመታዊ',
+    totalSpentThisMonth: 'በዚህ ወር የጠፋው ጠቅላላ',
+    vsLastMonth: 'ካለፈው ወር ጋር ሲነፃፀር',
+    dailyTrends: 'ዕለታዊ አዝማሚያዎች',
+    details: 'ዝርዝሮች',
+    topCategories: 'ከፍተኛ ምድቦች',
+    transactions: 'ግብይቶች',
+
+    // Wallets Screen
+    yourWallets: 'የእርስዎ ቦርሳዎች',
+    primary: 'ዋና',
+    editWallet: 'የቦርሳ ማስተካከያ',
+    newWallet: 'አዲስ ቦርሳ',
+    walletName: 'የቦርሳ ስም',
+    initialBalance: 'የመጀመሪያ ቀሪ ሂሳብ',
+    themeColor: 'የገጽታ ቀለም',
+    saveWallet: 'ቦርሳ አስቀምጥ',
+    pleaseEnterWalletName: 'እባክዎ የቦርሳ ስም ያስገቡ',
+    cannotDelete: 'መሰረዝ አልተቻለም',
+    cannotDeletePrimary: 'ዋናውን ቦርሳ መሰረዝ አይችሉም። መጀመሪያ ሌላ ቦርሳ እንደ ዋና ያዘጋጁ።',
+    deleteWallet: 'ቦርሳ ሰርዝ',
+    deleteWalletWarning: 'እርግጠኛ ነዎት ይህን ቦርሳ መሰረዝ ይፈልጋሉ? ከዚህ የቦርሳ ስም ጋር የተገናኙ ሁሉም ታሪኮች ይቀራሉ ነገር ግን ቦርሳው ራሱ ይወገዳል።',
   }
 };
 

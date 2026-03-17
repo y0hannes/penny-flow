@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
 import { theme as staticTheme } from '@/theme';
+import { useLanguage } from '@/context/LanguageContext';
 
 const tabIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
   Home: 'wallet-outline',
@@ -26,6 +27,7 @@ const BottomTabBar = ({
 }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <View
@@ -39,7 +41,7 @@ const BottomTabBar = ({
           const { options } = descriptors[route.key];
 
           // Determine label
-          const labelText =
+          let labelText =
             typeof options.tabBarLabel === 'string'
               ? options.tabBarLabel
               : typeof options.tabBarLabel === 'function'
@@ -52,6 +54,10 @@ const BottomTabBar = ({
                   })
                   ?.toString() // convert to string for Text
                 : (options.title ?? route.name);
+          
+          if (!options.tabBarLabel && !options.title) {
+            labelText = t(route.name.toLowerCase());
+          }
 
           const isFocused = state.index === index;
 
