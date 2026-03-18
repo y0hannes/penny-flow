@@ -84,6 +84,32 @@ export const translations: Translations = {
     cannotDeletePrimary: 'You cannot delete the primary wallet. Set another wallet as primary first.',
     deleteWallet: 'Delete Wallet',
     deleteWalletWarning: 'Are you sure you want to delete this wallet? All history associated with this wallet name will remain but the wallet itself will be removed.',
+
+    // Add Expense Screen
+    addNewExpense: 'Add New Expense',
+    addNewIncome: 'Add New Income',
+    expense: 'Expense',
+    amount: 'AMOUNT',
+    category: 'Category',
+    note: 'NOTE',
+    addDescription: 'Add a description...',
+    date: 'DATE',
+    walletBank: 'WALLET / BANK',
+    selectWalletBank: 'Select Wallet / Bank',
+    saveExpense: 'Save Expense',
+    saveIncome: 'Save Income',
+    invalidAmount: 'Invalid Amount',
+    pleaseEnterValidAmount: 'Please enter a valid amount',
+
+    // Categories
+    food: 'Food',
+    shopping: 'Shopping',
+    bills: 'Bills',
+    transport: 'Transport',
+    salary: 'Salary',
+    freelance: 'Freelance',
+    gift: 'Gift',
+    investment: 'Investment',
   },
   am: {
     // Shared
@@ -95,7 +121,7 @@ export const translations: Translations = {
     
     // Bottom Tab
     home: 'መነሻ',
-    analytics: 'ትምህርት',
+    analytics: 'ምልከታ',
     profile: 'ፕራይፌል', // መገለጫ
     
     // Profile Screen
@@ -159,6 +185,32 @@ export const translations: Translations = {
     cannotDeletePrimary: 'ዋናውን ቦርሳ መሰረዝ አይችሉም። መጀመሪያ ሌላ ቦርሳ እንደ ዋና ያዘጋጁ።',
     deleteWallet: 'ቦርሳ ሰርዝ',
     deleteWalletWarning: 'እርግጠኛ ነዎት ይህን ቦርሳ መሰረዝ ይፈልጋሉ? ከዚህ የቦርሳ ስም ጋር የተገናኙ ሁሉም ታሪኮች ይቀራሉ ነገር ግን ቦርሳው ራሱ ይወገዳል።',
+
+    // Add Expense Screen
+    addNewExpense: 'አዲስ ወጪ ያክሉ',
+    addNewIncome: 'አዲስ ገቢ ያክሉ',
+    expense: 'ወጪ',
+    amount: 'መጠን',
+    category: 'ምድብ',
+    note: 'ማስታወሻ',
+    addDescription: 'መግለጫ ያክሉ...',
+    date: 'ቀን',
+    walletBank: 'ቦርሳ / ባንክ',
+    selectWalletBank: 'ቦርሳ / ባንክ ይምረጡ',
+    saveExpense: 'ወጪን ያስቀምጡ',
+    saveIncome: 'ገቢን ያስቀምጡ',
+    invalidAmount: 'ትክክል ያልሆነ መጠን',
+    pleaseEnterValidAmount: 'እባክዎ ትክክለኛ መጠን ያስገቡ',
+
+    // Categories
+    food: 'ምግብ',
+    shopping: 'ግብይት',
+    bills: 'ክፍያዎች',
+    transport: 'ትራንስፖርት',
+    salary: 'ደመወዝ',
+    freelance: 'የግል ሥራ (Freelance)',
+    gift: 'ስጦታ',
+    investment: 'ኢንቨስትመንት',
   }
 };
 
