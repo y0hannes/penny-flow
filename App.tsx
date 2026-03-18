@@ -5,19 +5,22 @@ import RootNavigator from '@/navigation/RootNavigator';
 import { AuthProvider } from '@/context/AuthContext';
 import { ExpenseProvider } from '@/context/ExpenseContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <ExpenseProvider>
-          <ThemeProvider>
-            <NavigationContainer>
-              <RootNavigator />
-            </NavigationContainer>
-          </ThemeProvider>
-        </ExpenseProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ExpenseProvider>
+            <ThemeProvider>
+              <NavigationContainer>
+                <RootNavigator />
+              </NavigationContainer>
+            </ThemeProvider>
+          </ExpenseProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }

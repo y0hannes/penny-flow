@@ -9,6 +9,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  updateProfile: (data: { full_name: string }) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,8 +51,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const updateProfile = async (data: { full_name: string }) => {
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: data.full_name }
+    });
+    
+    // Also update local user state optimistically
+    if (!error && user) {
+      setUser({ ...user, user_metadata: { ...user.user_metadata, full_name: data.full_name } });
+    }
+    
+    return { error };
+  };
+
   return (
-    <AuthContext.Provider value={{ session, user, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, loading, signOut, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
