@@ -19,6 +19,7 @@ import { Text, CategoryCard } from '@/components/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useExpenses } from '@/context/ExpenseContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 // Icon mapping for categories
 const categoryIcons: Record<string, string> = {
@@ -51,6 +52,7 @@ export default function AddExpenseScreen() {
   const navigation = useNavigation();
   const { addExpense, currency, wallets, primaryWallet, stealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
+  const { t } = useLanguage();
 
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState('');
@@ -71,7 +73,7 @@ export default function AddExpenseScreen() {
     // Validate amount
     const numAmount = parseFloat(amount);
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid amount');
+      Alert.alert(t('invalidAmount'), t('pleaseEnterValidAmount'));
       return;
     }
 
@@ -106,21 +108,21 @@ export default function AddExpenseScreen() {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
             <Ionicons name="close" size={28} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text variant="subheading" bold color="textPrimary">Add New {type === 'expense' ? 'Expense' : 'Income'}</Text>
+          <Text variant="subheading" bold color="textPrimary">{type === 'expense' ? t('addNewExpense') : t('addNewIncome')}</Text>
           <View style={{ width: 40 }} />
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={[styles.typeSelectorContainer, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
             <TouchableOpacity style={[styles.typeButton, type === 'expense' && styles.activeExpenseButton]} onPress={() => handleTypeChange('expense')}>
-              <Text variant="body" bold={type === 'expense'} color={type === 'expense' ? 'buttonText' : 'textSecondary'}>Expense</Text>
+              <Text variant="body" bold={type === 'expense'} color={type === 'expense' ? 'buttonText' : 'textSecondary'}>{t('expense')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.typeButton, type === 'income' && styles.activeIncomeButton]} onPress={() => handleTypeChange('income')}>
-              <Text variant="body" bold={type === 'income'} color={type === 'income' ? 'buttonText' : 'textSecondary'}>Income</Text>
+              <Text variant="body" bold={type === 'income'} color={type === 'income' ? 'buttonText' : 'textSecondary'}>{t('income')}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.amountContainer}>
-            <Text variant="caption" color="textTertiary" bold align="center" style={styles.amountLabel}>AMOUNT</Text>
+            <Text variant="caption" color="textTertiary" bold align="center" style={styles.amountLabel}>{t('amount')}</Text>
             <View style={styles.amountRow}>
               <TextInput
                 value={amount}
@@ -139,16 +141,16 @@ export default function AddExpenseScreen() {
             </View>
           </View>
           <View style={styles.sectionHeader}>
-            <Text variant="subheading" bold color="textPrimary">Category</Text>
+            <Text variant="subheading" bold color="textPrimary">{t('category')}</Text>
             <TouchableOpacity>
-              <Text variant="link" color="primary">See All</Text>
+              <Text variant="link" color="primary">{t('seeAll')}</Text>
             </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
             {categories.map((cat) => (
               <CategoryCard
                 key={cat.id}
-                label={cat.label}
+                label={t(cat.label.toLowerCase()) || cat.label}
                 icon={cat.icon}
                 variant="horizontal"
                 selected={selectedCategory === cat.label}
@@ -157,7 +159,7 @@ export default function AddExpenseScreen() {
             ))}
           </ScrollView>
           <View style={styles.sectionHeader}>
-            <Text variant="subheading" bold color="textPrimary">Details</Text>
+            <Text variant="subheading" bold color="textPrimary">{t('details')}</Text>
           </View>
           <View style={[styles.detailsContainer, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
             <View style={styles.detailItem}>
@@ -165,12 +167,12 @@ export default function AddExpenseScreen() {
                 <Ionicons name="menu-outline" size={24} color={theme.colors.textSecondary} />
               </View>
               <View style={styles.detailContent}>
-                <Text variant="caption" color="textTertiary" bold>NOTE</Text>
+                <Text variant="caption" color="textTertiary" bold>{t('note')}</Text>
                 <TextInput
                   ref={noteInputRef}
                   value={note}
                   onChangeText={setNote}
-                  placeholder="Add a description..."
+                  placeholder={t('addDescription')}
                   placeholderTextColor={theme.colors.textTertiary}
                   style={[styles.textInput, { color: theme.colors.textPrimary }]}
                   returnKeyType="done"
@@ -183,7 +185,7 @@ export default function AddExpenseScreen() {
                 <Ionicons name="calendar-outline" size={24} color={theme.colors.textSecondary} />
               </View>
               <View style={styles.detailContent}>
-                <Text variant="caption" color="textTertiary" bold>DATE</Text>
+                <Text variant="caption" color="textTertiary" bold>{t('date')}</Text>
                 <Text variant="body" color="textPrimary">Today, Oct 24</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={theme.colors.textTertiary} />
@@ -199,8 +201,8 @@ export default function AddExpenseScreen() {
                   <Ionicons name="wallet-outline" size={24} color={theme.colors.textSecondary} />
                 </View>
                 <View style={styles.detailContent}>
-                  <Text variant="caption" color="textTertiary" bold>WALLET / BANK</Text>
-                  <Text variant="body" color="textPrimary">{selectedWallet?.name || 'Select Wallet'}</Text>
+                  <Text variant="caption" color="textTertiary" bold>{t('walletBank')}</Text>
+                  <Text variant="body" color="textPrimary">{selectedWallet?.name || t('selectWalletBank')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.colors.textTertiary} />
               </TouchableOpacity>
@@ -218,7 +220,7 @@ export default function AddExpenseScreen() {
             onPress={handleSaveExpense}
             activeOpacity={0.8}
           >
-            <Text variant="button" bold>Save {type === 'expense' ? 'Expense' : 'Income'}</Text>
+            <Text variant="button" bold>{type === 'expense' ? t('saveExpense') : t('saveIncome')}</Text>
           </TouchableOpacity>
           <View style={{ height: 40 }} />
         </ScrollView>
@@ -234,7 +236,7 @@ export default function AddExpenseScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
             <View style={styles.modalHeader}>
-              <Text variant="subheading" bold>Select Wallet / Bank</Text>
+              <Text variant="subheading" bold>{t('selectWalletBank')}</Text>
               <TouchableOpacity onPress={() => setIsWalletModalVisible(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
               </TouchableOpacity>

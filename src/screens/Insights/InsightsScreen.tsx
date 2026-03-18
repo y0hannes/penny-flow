@@ -21,6 +21,7 @@ import {
 } from '@/components/ui';
 import { useExpenses } from '@/context/ExpenseContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -29,8 +30,11 @@ export default function InsightsScreen() {
   const insets = useSafeAreaInsets();
   const { expenses, currency, stealthMode, toggleStealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
-  const [selectedTab, setSelectedTab] = useState('Monthly');
+  const { t } = useLanguage();
+  const [selectedTabIndex, setSelectedTabIndex] = useState(1); // 0=Weekly, 1=Monthly, 2=Yearly
   const [showAllCategories, setShowAllCategories] = useState(false);
+  
+  const tabOptions = [t('weekly'), t('monthly'), t('yearly')];
 
   // Helper to parse dates from the mock data
   const parseDate = (dateStr: string) => {
@@ -53,18 +57,18 @@ export default function InsightsScreen() {
       if (exp.type !== 'expense') return false;
       const expDate = parseDate(exp.date);
 
-      if (selectedTab === 'Weekly') {
+      if (selectedTabIndex === 0) {
         const oneWeekAgo = new Date(now);
         oneWeekAgo.setDate(now.getDate() - 7);
         return expDate >= oneWeekAgo;
-      } else if (selectedTab === 'Monthly') {
+      } else if (selectedTabIndex === 1) {
         return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
-      } else if (selectedTab === 'Yearly') {
+      } else if (selectedTabIndex === 2) {
         return expDate.getFullYear() === currentYear || expDate.getFullYear() === 2025;
       }
       return true;
     });
-  }, [expenses, selectedTab]);
+  }, [expenses, selectedTabIndex]);
 
   // Calculate stats based on filtered expenses
   const totalSpent = useMemo(() => {
@@ -120,7 +124,7 @@ export default function InsightsScreen() {
   }, [categoriesStats]);
 
   // Mock trend data for line chart
-  const trendData = selectedTab === 'Weekly' ? [120, 150, 80, 100, 140, 90, 110] : [150, 180, 120, 220, 190, 242, 210, 280];
+  const trendData = selectedTabIndex === 0 ? [120, 150, 80, 100, 140, 90, 110] : [150, 180, 120, 220, 190, 242, 210, 280];
 
   return (
     <View
@@ -138,7 +142,7 @@ export default function InsightsScreen() {
           <Ionicons name="chevron-back" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
         <Text variant="subheading" bold color="textPrimary">
-          Analytics
+          {t('analytics')}
         </Text>
         <TouchableOpacity style={styles.iconButton}>
           <Ionicons name="calendar-outline" size={24} color={theme.colors.textPrimary} />
@@ -148,14 +152,14 @@ export default function InsightsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Period Selector Tabs */}
         <SegmentedControl
-          options={['Weekly', 'Monthly', 'Yearly']}
-          selectedOption={selectedTab}
-          onSelect={setSelectedTab}
+          options={tabOptions}
+          selectedOption={tabOptions[selectedTabIndex]}
+          onSelect={(label) => setSelectedTabIndex(tabOptions.indexOf(label))}
         />
 
         <View style={styles.summarySection}>
           <Text variant="caption" color="textSecondary" bold align="center" style={styles.summaryLabel}>
-            Total spent this month
+            {t('totalSpentThisMonth')}
           </Text>
           <View style={styles.totalAmountContainer}>
             <Text style={styles.totalAmount}>
@@ -172,7 +176,7 @@ export default function InsightsScreen() {
           <View style={styles.trendContainer}>
             <Ionicons name="trending-up" size={16} color={theme.colors.danger} />
             <Text variant="caption" color="danger" bold style={styles.trendText}>
-              +8.4% vs last month
+              +8.4% {t('vsLastMonth')}
             </Text>
           </View>
         </View>
@@ -191,11 +195,11 @@ export default function InsightsScreen() {
         >
           <View style={styles.cardHeader}>
             <View>
-              <Text variant="body" bold color="textPrimary">Daily Trends</Text>
+              <Text variant="body" bold color="textPrimary">{t('dailyTrends')}</Text>
               <Text variant="caption" color="textTertiary">August 1 - August 31</Text>
             </View>
             <TouchableOpacity style={styles.detailsButton}>
-              <Text variant="caption" bold color="primary">Details</Text>
+              <Text variant="caption" bold color="primary">{t('details')}</Text>
               <Ionicons name="chevron-forward" size={16} color={theme.colors.primary} />
             </TouchableOpacity>
           </View>
@@ -211,9 +215,9 @@ export default function InsightsScreen() {
 
         {/* Top Categories */}
         <View style={styles.sectionHeader}>
-          <Text variant="subheading" bold color="textPrimary">Top Categories</Text>
+          <Text variant="subheading" bold color="textPrimary">{t('topCategories')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('AllCategories')}>
-            <Text variant="link" color="primary">View All</Text>
+            <Text variant="link" color="primary">{t('viewAll')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -226,8 +230,8 @@ export default function InsightsScreen() {
               <View style={styles.categoryContent}>
                 <View style={styles.categoryInfoRow}>
                   <View>
-                    <Text variant="body" bold color="textPrimary">{item.label}</Text>
-                    <Text variant="caption" color="textTertiary">{item.count} Transactions</Text>
+                    <Text variant="body" bold color="textPrimary">{Object.keys(staticTheme.colors).includes(item.label) ? item.label : t(item.label.toLowerCase()) || item.label}</Text>
+                    <Text variant="caption" color="textTertiary">{item.count} {t('transactions')}</Text>
                   </View>
                     <View style={styles.categoryAmountInfo}>
                       <Text variant="body" bold color="textPrimary">

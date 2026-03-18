@@ -17,12 +17,14 @@ import { useNavigation } from '@react-navigation/native';
 import { useExpenses } from '@/context/ExpenseContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Wallet } from '@/types/expense';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function WalletsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { wallets, addWallet, updateWallet, deleteWallet, setPrimaryWallet, currency, stealthMode } = useExpenses();
   const { theme, isDark } = useTheme();
+  const { t } = useLanguage();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
@@ -49,7 +51,7 @@ export default function WalletsScreen() {
 
   const handleSaveWallet = () => {
     if (!walletName.trim()) {
-      Alert.alert('Error', 'Please enter a wallet name');
+      Alert.alert(t('error'), t('pleaseEnterWalletName'));
       return;
     }
 
@@ -75,16 +77,16 @@ export default function WalletsScreen() {
 
   const handleDeleteWallet = (id: string, isPrimary: boolean) => {
     if (isPrimary && wallets.length > 1) {
-      Alert.alert('Cannot Delete', 'You cannot delete the primary wallet. Set another wallet as primary first.');
+      Alert.alert(t('cannotDelete'), t('cannotDeletePrimary'));
       return;
     }
     
     Alert.alert(
-      'Delete Wallet',
-      'Are you sure you want to delete this wallet? All history associated with this wallet name will remain but the wallet itself will be removed.',
+      t('deleteWallet'),
+      t('deleteWalletWarning'),
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => deleteWallet(id) },
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('delete'), style: 'destructive', onPress: () => deleteWallet(id) },
       ]
     );
   };
@@ -95,14 +97,14 @@ export default function WalletsScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color={theme.colors.textPrimary} />
         </TouchableOpacity>
-        <Text variant="subheading" bold color="textPrimary">Manage Wallets</Text>
+        <Text variant="subheading" bold color="textPrimary">{t('manageWallets')}</Text>
         <TouchableOpacity onPress={() => handleOpenModal()} style={styles.addButton}>
           <Ionicons name="add" size={28} color={theme.colors.primary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <Text variant="caption" color="textTertiary" bold style={styles.sectionTitle}>YOUR WALLETS</Text>
+        <Text variant="caption" color="textTertiary" bold style={styles.sectionTitle}>{t('yourWallets')}</Text>
         
         {wallets.map((wallet) => (
           <View 
@@ -121,7 +123,7 @@ export default function WalletsScreen() {
                 <Text variant="body" bold color="textPrimary">{wallet.name}</Text>
                 {wallet.isPrimary && (
                   <View style={styles.primaryBadge}>
-                    <Text style={styles.primaryText}>PRIMARY</Text>
+                    <Text style={styles.primaryText}>{t('primary')}</Text>
                   </View>
                 )}
               </View>
@@ -171,14 +173,14 @@ export default function WalletsScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
             <View style={styles.modalHeader}>
-              <Text variant="subheading" bold>{editingWallet ? 'Edit Wallet' : 'New Wallet'}</Text>
+              <Text variant="subheading" bold>{editingWallet ? t('editWallet') : t('newWallet')}</Text>
               <TouchableOpacity onPress={() => setIsModalVisible(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.textPrimary} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.modalBody}>
-              <Text variant="caption" color="textTertiary" bold style={styles.inputLabel}>WALLET NAME</Text>
+              <Text variant="caption" color="textTertiary" bold style={styles.inputLabel}>{t('walletName')}</Text>
               <TextInput
                 value={walletName}
                 onChangeText={setWalletName}
@@ -187,7 +189,7 @@ export default function WalletsScreen() {
                 style={[styles.input, { color: theme.colors.textPrimary, borderBottomColor: isDark ? '#2C2C2C' : '#EBEBEB' }]}
               />
 
-              <Text variant="caption" color="textTertiary" bold style={[styles.inputLabel, { marginTop: 20 }]}>INITIAL BALANCE ({currency.symbol})</Text>
+              <Text variant="caption" color="textTertiary" bold style={[styles.inputLabel, { marginTop: 20 }]}>{t('initialBalance')} ({currency.symbol})</Text>
               <TextInput
                 value={walletBalance}
                 onChangeText={setWalletBalance}
@@ -195,7 +197,7 @@ export default function WalletsScreen() {
                 style={[styles.input, { color: theme.colors.textPrimary, borderBottomColor: isDark ? '#2C2C2C' : '#EBEBEB' }]}
               />
 
-              <Text variant="caption" color="textTertiary" bold style={[styles.inputLabel, { marginTop: 20 }]}>THEME COLOR</Text>
+              <Text variant="caption" color="textTertiary" bold style={[styles.inputLabel, { marginTop: 20 }]}>{t('themeColor')}</Text>
               <View style={styles.colorRow}>
                 {colors.map((color) => (
                   <TouchableOpacity
@@ -214,7 +216,7 @@ export default function WalletsScreen() {
                 onPress={handleSaveWallet}
                 style={[styles.saveButton, { backgroundColor: theme.colors.primary }]}
               >
-                <Text variant="button" bold>Save Wallet</Text>
+                <Text variant="button" bold>{t('saveWallet')}</Text>
               </TouchableOpacity>
             </View>
           </View>
