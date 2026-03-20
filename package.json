@@ -35,5 +35,6 @@
     "@types/text-encoding": "^0.0.40",
     "typescript": "~5.9.2"
   },
+  "license": "MIT",
   "private": true
 }
