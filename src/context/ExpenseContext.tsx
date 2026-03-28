@@ -124,7 +124,8 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         title: t.title,
         category: t.category,
         amount: parseFloat(t.amount),
-        date: new Date(t.date).toLocaleDateString(), // Simple formatting
+        date: new Date(t.date).toLocaleDateString(), // Display formatting
+        rawDate: t.date, // Keep ISO string for filtering
         type: t.type,
         icon: t.icon,
         note: t.note,

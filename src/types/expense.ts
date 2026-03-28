@@ -6,6 +6,7 @@ export interface Expense {
   category: string;
   amount: number;
   date: string;
+  rawDate?: string; // ISO date string from DB for reliable filtering
   type: ExpenseType;
   icon: string;
   note?: string;

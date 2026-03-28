@@ -50,12 +50,13 @@ export default function InsightsScreen() {
 
   const filteredExpenses = useMemo(() => {
     const now = new Date();
-    const currentYear = 2026; // Since our mock data is set in 2026
-    const currentMonth = 2; // March is index 2
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
 
     return expenses.filter(exp => {
       if (exp.type !== 'expense') return false;
-      const expDate = parseDate(exp.date);
+      const expDate = exp.rawDate ? new Date(exp.rawDate) : parseDate(exp.date);
+      if (isNaN(expDate.getTime())) return false;
 
       if (selectedTabIndex === 0) {
         const oneWeekAgo = new Date(now);
@@ -64,7 +65,7 @@ export default function InsightsScreen() {
       } else if (selectedTabIndex === 1) {
         return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
       } else if (selectedTabIndex === 2) {
-        return expDate.getFullYear() === currentYear || expDate.getFullYear() === 2025;
+        return expDate.getFullYear() === currentYear || expDate.getFullYear() === currentYear - 1;
       }
       return true;
     });
@@ -138,7 +139,7 @@ export default function InsightsScreen() {
     >
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
         <Text variant="subheading" bold color="textPrimary">
