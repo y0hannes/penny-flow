@@ -77,6 +77,16 @@ export default function AddExpenseScreen() {
       return;
     }
 
+    // Check if wallet has enough balance for expenses
+    if (type === 'expense' && numAmount > (selectedWallet?.balance || 0)) {
+      Alert.alert(
+        t('insufficientBalance'),
+        `${t('insufficientBalanceMsg')}\n\n${t('currentBalance')}: ${selectedWallet?.balance.toLocaleString()} ${currency.symbol}`,
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     // Get current date/time
     const now = new Date();
     const dateStr = `Today, ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
@@ -202,7 +212,14 @@ export default function AddExpenseScreen() {
                 </View>
                 <View style={styles.detailContent}>
                   <Text variant="caption" color="textTertiary" bold>{t('walletBank')}</Text>
-                  <Text variant="body" color="textPrimary">{selectedWallet?.name || t('selectWalletBank')}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text variant="body" color="textPrimary">{selectedWallet?.name || t('selectWalletBank')}</Text>
+                    {selectedWallet && (
+                      <Text variant="caption" color={selectedWallet.balance < parseFloat(amount || '0') ? "danger" : "textTertiary"} bold>
+                        {selectedWallet.balance.toLocaleString()} {currency.symbol}
+                      </Text>
+                    )}
+                  </View>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.colors.textTertiary} />
               </TouchableOpacity>

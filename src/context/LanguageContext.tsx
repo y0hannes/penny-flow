@@ -105,6 +105,9 @@ export const translations: Translations = {
     saveIncome: 'Save Income',
     invalidAmount: 'Invalid Amount',
     pleaseEnterValidAmount: 'Please enter a valid amount',
+    insufficientBalance: 'Insufficient Balance',
+    insufficientBalanceMsg: 'You do not have enough funds in your selected wallet for this expense.',
+    currentBalance: 'Current Balance',
 
     // Categories
     food: 'Food',
@@ -211,6 +214,9 @@ export const translations: Translations = {
     saveIncome: 'ገቢን ያስቀምጡ',
     invalidAmount: 'ትክክል ያልሆነ መጠን',
     pleaseEnterValidAmount: 'እባክዎ ትክክለኛ መጠን ያስገቡ',
+    insufficientBalance: 'በቂ ቀሪ ሂሳብ የለም',
+    insufficientBalanceMsg: 'ለዚህ ወጪ በመረጡት ቦርሳ ውስጥ በቂ ገንዘብ የለዎትም።',
+    currentBalance: 'የአሁኑ ቀሪ ሂሳብ',
 
     // Categories
     food: 'ምግብ',
