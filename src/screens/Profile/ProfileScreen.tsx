@@ -24,8 +24,6 @@ export default function ProfileScreen() {
   const [editName, setEditName] = useState(user?.user_metadata?.full_name || '');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
-  const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
-
   const languageOptions = [
     { code: 'en', label: 'English' },
     { code: 'am', label: 'አማርኛ' },
@@ -70,29 +68,6 @@ export default function ProfileScreen() {
             {user?.user_metadata?.full_name || 'User'}
           </Text>
           <Text variant="caption" color="textTertiary">{user?.email}</Text>
-        </View>
-
-        {/* Wealth Summary */}
-        <View style={[styles.wealthCard, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
-          <Text variant="caption" color="textTertiary" bold>{t('totalWealth')}</Text>
-          <View style={styles.amountContainer}>
-            <Text style={[styles.totalAmount, { color: theme.colors.textPrimary }]}>
-              {stealthMode ? '••••' : totalBalance.toLocaleString()} {currency.symbol}
-            </Text>
-            <TouchableOpacity onPress={toggleStealthMode} style={styles.stealthToggle}>
-              <Ionicons 
-                name={stealthMode ? "eye-outline" : "eye-off-outline"} 
-                size={20} 
-                color={theme.colors.textTertiary} 
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.walletCount}>
-            <Ionicons name="wallet-outline" size={14} color={theme.colors.primary} />
-            <Text variant="caption" color="primary" bold style={{ marginLeft: 4 }}>
-              {wallets.length} {t('walletsActive')}
-            </Text>
-          </View>
         </View>
 
         {/* Combined Menu Items */}
@@ -344,33 +319,6 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 22,
     marginBottom: 2,
-  },
-  wealthCard: {
-    marginHorizontal: staticTheme.spacing.md,
-    padding: 24,
-    borderRadius: 24,
-    alignItems: 'center',
-  },
-  totalAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  amountContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  stealthToggle: {
-    marginLeft: 10,
-    padding: 4,
-  },
-  walletCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E6F9F5',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
   },
   menuContainer: {
     paddingHorizontal: staticTheme.spacing.md,
