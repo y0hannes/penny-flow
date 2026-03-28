@@ -97,13 +97,14 @@ export default function HomeScreen() {
         <View
           style={[
             styles.profileContainer,
-            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#E0E0E0' },
+            { 
+              backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F5F5F5',
+              alignItems: 'center',
+              justifyContent: 'center' 
+            },
           ]}
         >
-          <Image
-            source={{ uri: 'https://avatar.iran.liara.run/public/65' }} // Placeholder avatar
-            style={styles.avatar}
-          />
+          <Ionicons name="person" size={24} color={theme.colors.textTertiary} />
         </View>
         <Text variant="subheading" bold color="textPrimary">
           Penny Flow
@@ -221,10 +222,6 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     overflow: 'hidden',
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
   },
   notificationButton: {
     width: 40,

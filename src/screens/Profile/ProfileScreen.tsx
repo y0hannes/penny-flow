@@ -55,14 +55,17 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <View style={[styles.avatarContainer, { borderColor: theme.colors.primary }]}>
-            <Image
-              source={{ uri: 'https://avatar.iran.liara.run/public/65' }}
-              style={styles.avatar}
-            />
-            <TouchableOpacity style={[styles.editBadge, { backgroundColor: theme.colors.primary }]}>
-              <Ionicons name="camera" size={12} color="#FFFFFF" />
-            </TouchableOpacity>
+          <View
+            style={[
+              styles.avatarContainer,
+              { 
+                backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F5F5F5',
+                alignItems: 'center',
+                justifyContent: 'center' 
+              },
+            ]}
+          >
+            <Ionicons name="person" size={50} color={theme.colors.textTertiary} />
           </View>
           <Text variant="subheading" bold color="textPrimary" style={styles.userName}>
             {user?.user_metadata?.full_name || 'User'}
@@ -296,25 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     padding: 4,
-    position: 'relative',
     marginBottom: 15,
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 46,
-  },
-  editBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: 'transparent',
   },
   userName: {
     fontSize: 22,
