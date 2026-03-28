@@ -16,6 +16,14 @@ export interface Expense {
 export interface Category {
   id: string;
   label: string;
+  icon: string;
+  type: ExpenseType;
+  color?: string;
+}
+
+export interface CategorySummary {
+  id: string;
+  label: string;
   amount: number;
   icon: string;
 }

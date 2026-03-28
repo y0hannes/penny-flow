@@ -109,6 +109,15 @@ export const translations: Translations = {
     insufficientBalanceMsg: 'You do not have enough funds in your selected wallet for this expense.',
     currentBalance: 'Current Balance',
 
+    // Categories Screen
+    manageCategories: 'Manage Categories',
+    addNewCategory: 'Add New Category',
+    categoryName: 'CATEGORY NAME',
+    categoryType: 'CATEGORY TYPE',
+    categoryIcon: 'CATEGORY ICON',
+    saveCategory: 'Save Category',
+    pleaseEnterCategoryName: 'Please enter a category name',
+
     // Categories
     food: 'Food',
     shopping: 'Shopping',
@@ -217,6 +226,15 @@ export const translations: Translations = {
     insufficientBalance: 'በቂ ቀሪ ሂሳብ የለም',
     insufficientBalanceMsg: 'ለዚህ ወጪ በመረጡት ቦርሳ ውስጥ በቂ ገንዘብ የለዎትም።',
     currentBalance: 'የአሁኑ ቀሪ ሂሳብ',
+
+    // Categories Screen
+    manageCategories: 'ምድቦችን አስተዳድር',
+    addNewCategory: 'አዲስ ምድብ ያክሉ',
+    categoryName: 'የምድብ ስም',
+    categoryType: 'የምድብ አይነት',
+    categoryIcon: 'የምድብ አዶ',
+    saveCategory: 'ምድብ አስቀምጥ',
+    pleaseEnterCategoryName: 'እባክዎ የምድብ ስም ያስገቡ',
 
     // Categories
     food: 'ምግብ',

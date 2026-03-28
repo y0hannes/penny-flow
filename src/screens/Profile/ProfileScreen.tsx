@@ -93,6 +93,11 @@ export default function ProfileScreen() {
               label={t('financialReports')}
               onPress={() => {}}
             />
+            <SettingsItem
+              icon="grid-outline"
+              label={t('manageCategories')}
+              onPress={() => navigation.navigate('Categories' as never)}
+            />
           </SettingsSection>
 
           <SettingsSection title={t('appSettings')}>

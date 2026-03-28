@@ -33,24 +33,10 @@ const categoryIcons: Record<string, string> = {
   Investment: 'trending-up',
 };
 
-const expenseCategories = [
-  { id: '1', label: 'Food', icon: 'restaurant' as const },
-  { id: '2', label: 'Shopping', icon: 'cart' as const },
-  { id: '3', label: 'Bills', icon: 'receipt' as const },
-  { id: '4', label: 'Transport', icon: 'car' as const },
-];
-
-const incomeCategories = [
-  { id: '1', label: 'Salary', icon: 'briefcase' as const },
-  { id: '2', label: 'Freelance', icon: 'laptop' as const },
-  { id: '3', label: 'Gift', icon: 'gift' as const },
-  { id: '4', label: 'Investment', icon: 'trending-up' as const },
-];
-
 export default function AddExpenseScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { addExpense, currency, wallets, primaryWallet, stealthMode } = useExpenses();
+  const { addExpense, currency, wallets, primaryWallet, stealthMode, categories: allCategories } = useExpenses();
   const { theme, isDark } = useTheme();
   const { t } = useLanguage();
 
@@ -62,11 +48,12 @@ export default function AddExpenseScreen() {
   const [isWalletModalVisible, setIsWalletModalVisible] = useState(false);
   const noteInputRef = useRef<TextInput>(null);
 
-  const categories = type === 'expense' ? expenseCategories : incomeCategories;
+  const categories = allCategories.filter(c => c.type === type);
 
   const handleTypeChange = (newType: 'expense' | 'income') => {
     setType(newType);
-    setSelectedCategory(newType === 'expense' ? 'Food' : 'Salary');
+    const firstCat = allCategories.find(c => c.type === newType);
+    setSelectedCategory(firstCat?.label || (newType === 'expense' ? 'Food' : 'Salary'));
   };
 
   const handleSaveExpense = () => {
@@ -161,7 +148,7 @@ export default function AddExpenseScreen() {
               <CategoryCard
                 key={cat.id}
                 label={t(cat.label.toLowerCase()) || cat.label}
-                icon={cat.icon}
+                icon={cat.icon as any}
                 variant="horizontal"
                 selected={selectedCategory === cat.label}
                 onPress={() => setSelectedCategory(cat.label)}
