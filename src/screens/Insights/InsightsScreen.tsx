@@ -48,33 +48,141 @@ export default function InsightsScreen() {
     return new Date(dateStr);
   };
 
-  const filteredExpenses = useMemo(() => {
+  const parseDateForFiltering = (exp: any) => {
+    const d = exp.rawDate ? new Date(exp.rawDate) : parseDate(exp.date);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const periodResults = useMemo(() => {
     const now = new Date();
+    // Normalize "now" to end of day to include all of today's transactions
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
+    
+    // Set up range for current period
+    let currentStart: Date, currentEnd: Date;
+    let prevStart: Date, prevEnd: Date;
+    let labelKey = 'totalSpentThisMonth';
+    let vsKey = 'vsLastMonth';
+    let rangeLabel = '';
 
-    return expenses.filter(exp => {
+    if (selectedTabIndex === 0) { // Weekly (Last 7 Days)
+      currentEnd = todayEnd;
+      // Subtract 6 days from today's start to get a 7-day range INCLUDING today
+      currentStart = new Date(todayStart);
+      currentStart.setDate(todayStart.getDate() - 6);
+      
+      prevEnd = new Date(currentStart);
+      prevEnd.setMilliseconds(-1); // One millisecond before current start
+      prevStart = new Date(prevEnd);
+      prevStart.setDate(prevStart.getDate() - 6);
+      prevStart.setHours(0, 0, 0, 0);
+      
+      labelKey = 'totalSpentThisWeek';
+      vsKey = 'vsLastWeek';
+      rangeLabel = `${currentStart.toLocaleDateString(undefined, {month:'short', day:'numeric'})} - ${currentEnd.toLocaleDateString(undefined, {month:'short', day:'numeric'})}`;
+    } else if (selectedTabIndex === 1) { // Monthly
+      currentStart = new Date(currentYear, currentMonth, 1, 0, 0, 0, 0);
+      currentEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
+      
+      prevStart = new Date(currentYear, currentMonth - 1, 1, 0, 0, 0, 0);
+      prevEnd = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
+      
+      labelKey = 'totalSpentThisMonth';
+      vsKey = 'vsLastMonth';
+      rangeLabel = currentStart.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    } else { // Yearly
+      currentStart = new Date(currentYear, 0, 1, 0, 0, 0, 0);
+      currentEnd = new Date(currentYear, 11, 31, 23, 59, 59, 999);
+      
+      prevStart = new Date(currentYear - 1, 0, 1, 0, 0, 0, 0);
+      prevEnd = new Date(currentYear - 1, 11, 31, 23, 59, 59, 999);
+      
+      labelKey = 'totalSpentThisYear';
+      vsKey = 'vsLastYear';
+      rangeLabel = `Jan 1 - Dec 31, ${currentYear}`;
+    }
+
+    const currentExpenses = expenses.filter(exp => {
       if (exp.type !== 'expense') return false;
-      const expDate = exp.rawDate ? new Date(exp.rawDate) : parseDate(exp.date);
-      if (isNaN(expDate.getTime())) return false;
-
-      if (selectedTabIndex === 0) {
-        const oneWeekAgo = new Date(now);
-        oneWeekAgo.setDate(now.getDate() - 7);
-        return expDate >= oneWeekAgo;
-      } else if (selectedTabIndex === 1) {
-        return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
-      } else if (selectedTabIndex === 2) {
-        return expDate.getFullYear() === currentYear || expDate.getFullYear() === currentYear - 1;
-      }
-      return true;
+      const d = parseDateForFiltering(exp);
+      return d && d >= currentStart && d <= currentEnd;
     });
+
+    const previousExpenses = expenses.filter(exp => {
+      if (exp.type !== 'expense') return false;
+      const d = parseDateForFiltering(exp);
+      return d && d >= prevStart && d <= prevEnd;
+    });
+
+    const currentTotal = currentExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const prevTotal = previousExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    
+    let trend = 0;
+    if (prevTotal > 0) {
+      trend = ((currentTotal - prevTotal) / prevTotal) * 100;
+    }
+
+    // Aggregating for LineChart
+    let chartData: number[] = [];
+    if (selectedTabIndex === 0) { // Last 7 days
+      const days: Record<string, number> = {};
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(currentStart);
+        d.setDate(d.getDate() + i);
+        days[d.toDateString()] = 0;
+      }
+      currentExpenses.forEach(exp => {
+        const d = parseDateForFiltering(exp);
+        // Normalize time for key comparison
+        if (d) {
+          const key = d.toDateString();
+          if (days[key] !== undefined) {
+             days[key] += exp.amount;
+          }
+        }
+      });
+      chartData = Object.values(days);
+    } else if (selectedTabIndex === 1) { // Current Month (aggregated by weeks or bins of 4)
+      const parts = 4;
+      chartData = new Array(parts).fill(0);
+      const daysInMonth = currentEnd.getDate();
+      currentExpenses.forEach(exp => {
+        const d = parseDateForFiltering(exp);
+        if (d) {
+          const day = d.getDate();
+          const bin = Math.min(Math.floor((day - 1) / (daysInMonth / parts)), parts - 1);
+          chartData[bin] += exp.amount;
+        }
+      });
+    } else { // Current Year (aggregated by months)
+      chartData = new Array(12).fill(0);
+      currentExpenses.forEach(exp => {
+        const d = parseDateForFiltering(exp);
+        if (d) {
+          chartData[d.getMonth()] += exp.amount;
+        }
+      });
+    }
+
+    if (chartData.every(v => v === 0)) chartData = [0, 0, 0, 0];
+
+    return {
+      currentExpenses,
+      currentTotal,
+      trend,
+      labelKey,
+      vsKey,
+      rangeLabel,
+      chartData
+    };
   }, [expenses, selectedTabIndex]);
 
-  // Calculate stats based on filtered expenses
-  const totalSpent = useMemo(() => {
-    return filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-  }, [filteredExpenses]);
+  const totalSpent = periodResults.currentTotal;
+  const filteredExpenses = periodResults.currentExpenses;
 
   const categoriesStats = useMemo(() => {
     const statsMap = new Map<string, { amount: number; count: number; icon: string; color: string }>();
@@ -124,8 +232,7 @@ export default function InsightsScreen() {
     }));
   }, [categoriesStats]);
 
-  // Mock trend data for line chart
-  const trendData = selectedTabIndex === 0 ? [120, 150, 80, 100, 140, 90, 110] : [150, 180, 120, 220, 190, 242, 210, 280];
+  const trendData = periodResults.chartData;
 
   return (
     <View
@@ -160,7 +267,7 @@ export default function InsightsScreen() {
 
         <View style={styles.summarySection}>
           <Text variant="caption" color="textSecondary" bold align="center" style={styles.summaryLabel}>
-            {t('totalSpentThisMonth')}
+            {t(periodResults.labelKey)}
           </Text>
           <View style={styles.totalAmountContainer}>
             <Text style={styles.totalAmount}>
@@ -175,9 +282,9 @@ export default function InsightsScreen() {
             </TouchableOpacity>
           </View>
           <View style={styles.trendContainer}>
-            <Ionicons name="trending-up" size={16} color={theme.colors.danger} />
-            <Text variant="caption" color="danger" bold style={styles.trendText}>
-              +8.4% {t('vsLastMonth')}
+            <Ionicons name={periodResults.trend >= 0 ? "trending-up" : "trending-down"} size={16} color={periodResults.trend >= 0 ? theme.colors.danger : theme.colors.primary} />
+            <Text variant="caption" color={periodResults.trend >= 0 ? "danger" : "primary"} bold style={styles.trendText}>
+              {periodResults.trend >= 0 ? '+' : ''}{periodResults.trend.toFixed(1)}% {t(periodResults.vsKey)}
             </Text>
           </View>
         </View>
@@ -196,8 +303,8 @@ export default function InsightsScreen() {
         >
           <View style={styles.cardHeader}>
             <View>
-              <Text variant="body" bold color="textPrimary">{t('dailyTrends')}</Text>
-              <Text variant="caption" color="textTertiary">August 1 - August 31</Text>
+              <Text variant="body" bold color="textPrimary">{t(selectedTabIndex === 2 ? 'monthlyTrends' : 'dailyTrends')}</Text>
+              <Text variant="caption" color="textTertiary">{periodResults.rangeLabel}</Text>
             </View>
             <TouchableOpacity style={styles.detailsButton}>
               <Text variant="caption" bold color="primary">{t('details')}</Text>
@@ -207,12 +314,13 @@ export default function InsightsScreen() {
 
           <View style={styles.lineChartWrapper}>
             <LineChart data={trendData} />
-            {/* Tooltip mockup */}
+            {/* Tooltip mockup for the last point */}
             <View style={styles.tooltip}>
-              <Text style={styles.tooltipText}>{stealthMode ? '••••' : '242.00'} {currency.symbol}</Text>
+              <Text style={styles.tooltipText}>{stealthMode ? '••••' : trendData[trendData.length - 1].toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency.symbol}</Text>
             </View>
           </View>
         </View>
+
 
         {/* Top Categories */}
         <View style={styles.sectionHeader}>

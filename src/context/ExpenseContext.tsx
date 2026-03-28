@@ -165,8 +165,12 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
       .single();
 
     if (!error && data) {
-      // Update local state
-      setExpenses(prev => [{ ...expense, id: data.id }, ...prev]);
+      // Update local state with the saved data including the raw ISO date
+      setExpenses(prev => [{ 
+        ...expense, 
+        id: data.id,
+        rawDate: data.date 
+      }, ...prev]);
       
       // Update wallet balance in DB
       const balanceChange = expense.type === 'expense' ? -expense.amount : expense.amount;
