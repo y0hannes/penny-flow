@@ -22,10 +22,16 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.y0hannes.pennyflow"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8b73c4b5-b7f4-4d7e-9ea4-616fd4fe39a2"
+      }
     }
   }
 }

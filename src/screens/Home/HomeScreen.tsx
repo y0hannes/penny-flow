@@ -27,7 +27,7 @@ import { useLanguage } from '@/context/LanguageContext';
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { expenses, currency, stealthMode } = useExpenses();
+  const { expenses, currency, stealthMode, wallets } = useExpenses();
   const { theme, isDark } = useTheme();
   const { t } = useLanguage();
 
@@ -56,21 +56,39 @@ export default function HomeScreen() {
     }));
   }, [expenses]);
 
-  // Calculate total spent this month (all expenses)
+  // Calculate total spent this month
   const totalSpent = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
     return expenses
-      .filter((exp) => exp.type === 'expense')
+      .filter((exp) => {
+        if (exp.type !== 'expense') return false;
+        const d = exp.rawDate ? new Date(exp.rawDate) : new Date(exp.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      })
       .reduce((sum, exp) => sum + exp.amount, 0);
   }, [expenses]);
 
   // Calculate total income this month
   const totalIncome = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
     return expenses
-      .filter((exp) => exp.type === 'income')
+      .filter((exp) => {
+        if (exp.type !== 'income') return false;
+        const d = exp.rawDate ? new Date(exp.rawDate) : new Date(exp.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      })
       .reduce((sum, exp) => sum + exp.amount, 0);
   }, [expenses]);
 
-  const balance = totalIncome - totalSpent;
+  const totalWealth = useMemo(() => {
+    return wallets.reduce((sum, w) => sum + w.balance, 0);
+  }, [wallets]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.colors.background }]}>
@@ -79,13 +97,14 @@ export default function HomeScreen() {
         <View
           style={[
             styles.profileContainer,
-            { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#E0E0E0' },
+            { 
+              backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F5F5F5',
+              alignItems: 'center',
+              justifyContent: 'center' 
+            },
           ]}
         >
-          <Image
-            source={{ uri: 'https://avatar.iran.liara.run/public/65' }} // Placeholder avatar
-            style={styles.avatar}
-          />
+          <Ionicons name="person" size={24} color={theme.colors.textTertiary} />
         </View>
         <Text variant="subheading" bold color="textPrimary">
           Penny Flow
@@ -108,9 +127,9 @@ export default function HomeScreen() {
         <SummaryCard
           variant="large"
           label={t('totalBalance')}
-          amount={balance}
-          comparison={stealthMode ? `•••• ${t('fromLastMonth')}` : (balance >= 0 ? `+250 ${currency.symbol} ${t('fromLastMonth')}` : `-150 ${currency.symbol} ${t('fromLastMonth')}`)}
-          amountColor={balance >= 0 ? "success" : "danger"}
+          amount={totalWealth}
+          comparison={stealthMode ? `•••• ${t('fromLastMonth')}` : (totalWealth >= 0 ? `+250 ${currency.symbol} ${t('fromLastMonth')}` : `-150 ${currency.symbol} ${t('fromLastMonth')}`)}
+          amountColor={totalWealth >= 0 ? "success" : "danger"}
           showStealthToggle={true}
         />
 
@@ -203,10 +222,6 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     overflow: 'hidden',
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
   },
   notificationButton: {
     width: 40,

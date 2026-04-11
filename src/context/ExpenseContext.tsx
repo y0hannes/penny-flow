@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Expense, Currency, CurrencyCode, Wallet } from '@/types/expense';
+import { Expense, Currency, CurrencyCode, Wallet, Category, ExpenseType } from '@/types/expense';
 import { supabase } from '@/lib/supabase';
 
 export const currencies: Currency[] = [
@@ -24,6 +24,9 @@ interface ExpenseContextType {
   primaryWallet: Wallet | undefined;
   stealthMode: boolean;
   toggleStealthMode: () => void;
+  categories: Category[];
+  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
 }
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
@@ -36,6 +39,7 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
   const [currency, setCurrencyState] = useState<Currency>(currencies[0]); // Default to Birr (ETB)
   const [wallets, setWallets] = useState<Wallet[]>(initialWallets);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [stealthMode, setStealthMode] = useState(false);
 
   const toggleStealthMode = () => setStealthMode(prev => !prev);
@@ -124,12 +128,80 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         title: t.title,
         category: t.category,
         amount: parseFloat(t.amount),
-        date: new Date(t.date).toLocaleDateString(), // Simple formatting
+        date: new Date(t.date).toLocaleDateString(), // Display formatting
+        rawDate: t.date, // Keep ISO string for filtering
         type: t.type,
         icon: t.icon,
         note: t.note,
         account: t.wallets?.name || 'Unknown',
       })));
+    }
+
+    // Fetch Categories
+    const { data: catData, error: catError } = await supabase
+      .from('categories')
+      .select('*')
+      .order('label', { ascending: true });
+
+    if (!catError && catData && catData.length > 0) {
+      setCategories(catData.map(c => ({
+        id: c.id,
+        label: c.label,
+        icon: c.icon,
+        type: c.type,
+        color: c.color,
+      })));
+    } else {
+      // Set defaults if no categories found or error
+      const defaults: Category[] = [
+        { id: '1', label: 'Food', icon: 'restaurant', type: 'expense' },
+        { id: '2', label: 'Shopping', icon: 'cart', type: 'expense' },
+        { id: '3', label: 'Bills', icon: 'receipt', type: 'expense' },
+        { id: '4', label: 'Transport', icon: 'car', type: 'expense' },
+        { id: '5', label: 'Salary', icon: 'briefcase', type: 'income' },
+        { id: '6', label: 'Freelance', icon: 'laptop', type: 'income' },
+        { id: '7', label: 'Gift', icon: 'gift', type: 'income' },
+        { id: '8', label: 'Investment', icon: 'trending-up', type: 'income' },
+      ];
+      setCategories(defaults);
+    }
+  };
+
+  const addCategory = async (category: Omit<Category, 'id'>) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({
+        user_id: user.id,
+        label: category.label,
+        icon: category.icon,
+        type: category.type,
+        color: category.color,
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      setCategories(prev => [...prev, { ...category, id: data.id }]);
+    } else {
+      // Fallback for local-only if table doesn't exist yet
+      setCategories(prev => [...prev, { ...category, id: Math.random().toString() }]);
+    }
+  };
+
+  const deleteCategory = async (id: string) => {
+    const { error } = await supabase
+      .from('categories')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      setCategories(prev => prev.filter(c => c.id !== id));
+    } else {
+      // Fallback local delete
+      setCategories(prev => prev.filter(c => c.id !== id));
     }
   };
 
@@ -164,8 +236,12 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
       .single();
 
     if (!error && data) {
-      // Update local state
-      setExpenses(prev => [{ ...expense, id: data.id }, ...prev]);
+      // Update local state with the saved data including the raw ISO date
+      setExpenses(prev => [{ 
+        ...expense, 
+        id: data.id,
+        rawDate: data.date 
+      }, ...prev]);
       
       // Update wallet balance in DB
       const balanceChange = expense.type === 'expense' ? -expense.amount : expense.amount;
@@ -322,6 +398,9 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         primaryWallet,
         stealthMode,
         toggleStealthMode,
+        categories,
+        addCategory,
+        deleteCategory,
       }}
     >
       {children}

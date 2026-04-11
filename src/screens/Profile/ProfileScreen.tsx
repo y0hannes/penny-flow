@@ -24,8 +24,6 @@ export default function ProfileScreen() {
   const [editName, setEditName] = useState(user?.user_metadata?.full_name || '');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
-  const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
-
   const languageOptions = [
     { code: 'en', label: 'English' },
     { code: 'am', label: 'አማርኛ' },
@@ -57,42 +55,22 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <View style={[styles.avatarContainer, { borderColor: theme.colors.primary }]}>
-            <Image
-              source={{ uri: 'https://avatar.iran.liara.run/public/65' }}
-              style={styles.avatar}
-            />
-            <TouchableOpacity style={[styles.editBadge, { backgroundColor: theme.colors.primary }]}>
-              <Ionicons name="camera" size={12} color="#FFFFFF" />
-            </TouchableOpacity>
+          <View
+            style={[
+              styles.avatarContainer,
+              { 
+                backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F5F5F5',
+                alignItems: 'center',
+                justifyContent: 'center' 
+              },
+            ]}
+          >
+            <Ionicons name="person" size={50} color={theme.colors.textTertiary} />
           </View>
           <Text variant="subheading" bold color="textPrimary" style={styles.userName}>
             {user?.user_metadata?.full_name || 'User'}
           </Text>
           <Text variant="caption" color="textTertiary">{user?.email}</Text>
-        </View>
-
-        {/* Wealth Summary */}
-        <View style={[styles.wealthCard, { backgroundColor: isDark ? theme.colors.unselectedCategoryBg : '#F7F8F9' }]}>
-          <Text variant="caption" color="textTertiary" bold>{t('totalWealth')}</Text>
-          <View style={styles.amountContainer}>
-            <Text style={[styles.totalAmount, { color: theme.colors.textPrimary }]}>
-              {stealthMode ? '••••' : totalBalance.toLocaleString()} {currency.symbol}
-            </Text>
-            <TouchableOpacity onPress={toggleStealthMode} style={styles.stealthToggle}>
-              <Ionicons 
-                name={stealthMode ? "eye-outline" : "eye-off-outline"} 
-                size={20} 
-                color={theme.colors.textTertiary} 
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.walletCount}>
-            <Ionicons name="wallet-outline" size={14} color={theme.colors.primary} />
-            <Text variant="caption" color="primary" bold style={{ marginLeft: 4 }}>
-              {wallets.length} {t('walletsActive')}
-            </Text>
-          </View>
         </View>
 
         {/* Combined Menu Items */}
@@ -114,6 +92,11 @@ export default function ProfileScreen() {
               icon="analytics-outline"
               label={t('financialReports')}
               onPress={() => {}}
+            />
+            <SettingsItem
+              icon="grid-outline"
+              label={t('manageCategories')}
+              onPress={() => navigation.navigate('Categories' as never)}
             />
           </SettingsSection>
 
@@ -321,56 +304,11 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     padding: 4,
-    position: 'relative',
     marginBottom: 15,
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 46,
-  },
-  editBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: 'transparent',
   },
   userName: {
     fontSize: 22,
     marginBottom: 2,
-  },
-  wealthCard: {
-    marginHorizontal: staticTheme.spacing.md,
-    padding: 24,
-    borderRadius: 24,
-    alignItems: 'center',
-  },
-  totalAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  amountContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  stealthToggle: {
-    marginLeft: 10,
-    padding: 4,
-  },
-  walletCount: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E6F9F5',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
   },
   menuContainer: {
     paddingHorizontal: staticTheme.spacing.md,

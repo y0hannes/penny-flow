@@ -6,6 +6,7 @@ export interface Expense {
   category: string;
   amount: number;
   date: string;
+  rawDate?: string; // ISO date string from DB for reliable filtering
   type: ExpenseType;
   icon: string;
   note?: string;
@@ -13,6 +14,14 @@ export interface Expense {
 }
 
 export interface Category {
+  id: string;
+  label: string;
+  icon: string;
+  type: ExpenseType;
+  color?: string;
+}
+
+export interface CategorySummary {
   id: string;
   label: string;
   amount: number;

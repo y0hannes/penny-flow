@@ -4,16 +4,17 @@ import BottomTabNavigator from './BottomTabNavigator';
 import AddExpenseScreen from '@/screens/AddExpense/AddExpenseScreen';
 import AllCategoriesScreen from '@/screens/Insights/AllCategoriesScreen';
 import WalletsScreen from '@/screens/Settings/WalletsScreen';
+import CategoriesScreen from '@/screens/Profile/CategoriesScreen';
 import AuthScreen from '@/screens/Auth/AuthScreen';
 import { useAuth } from '@/context/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
-
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   AddExpense: undefined;
   AllCategories: undefined;
   Wallets: undefined;
+  Categories: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -46,6 +47,7 @@ export default function RootNavigator() {
           />
           <Stack.Screen name="AllCategories" component={AllCategoriesScreen} />
           <Stack.Screen name="Wallets" component={WalletsScreen} />
+          <Stack.Screen name="Categories" component={CategoriesScreen} />
         </>
       )}
     </Stack.Navigator>
